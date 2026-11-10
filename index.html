@@ -340,11 +340,6 @@ h2{font-family:var(--f-display);font-size:40px;line-height:1.08;font-weight:700;
 .li b{font-weight:600}
 .list-card{padding:18px}
 
-/* ---------- notes ---------- */
-#notes{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(860px, calc(100% - 32px));background:var(--navy);color:#fff;border-radius:16px;padding:16px 20px;box-shadow:0 20px 50px rgba(15,27,61,.35);z-index:40;display:flex;gap:16px;align-items:flex-start}
-#notes .label{color:var(--green-b);white-space:nowrap;padding-top:3px}
-#notes p{font-size:15px;line-height:1.5;color:var(--on-navy);flex:1}
-#notes button{color:var(--on-navy-dim);font-size:13px}
 
 /* ================= PHONE (390 × 844) ================= */
 .phone-wrap{--ps:.71;width:calc(412px * var(--ps));height:calc(866px * var(--ps));position:relative;flex:none}
@@ -527,7 +522,7 @@ body.proto #app{visibility:hidden}
   body{overflow:auto}
   #app{height:auto;min-height:100%}
   .topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
-  .tb-prog,.tb-count,.tb-nav,.tb-notes{display:none}
+  .tb-prog,.tb-count,.tb-nav{display:none}
   .tb-sec{display:none}
   #viewport{overflow:visible}
   #stage{position:static;width:auto;height:auto;transform:none!important;box-shadow:none;border-radius:0;overflow:visible}
@@ -554,7 +549,6 @@ body.proto #app{visibility:hidden}
   .ns{flex-direction:column;align-items:flex-start}
   .event{grid-template-columns:1fr}
   .thumbs{justify-content:flex-start}
-  #notes{display:none!important}
 }
 @media (max-width: 480px){ .s4 .sbody{grid-template-columns:1fr!important} .days{gap:4px} .day{font-size:12px} }
 @media (prefers-reduced-motion: reduce){
@@ -572,7 +566,6 @@ body.proto #app{visibility:hidden}
       <button class="tb-btn" id="tbPrev" aria-label="Previous slide">‹</button>
       <button class="tb-btn" id="tbNext" aria-label="Next slide">›</button>
     </div>
-    <button class="tb-btn tb-notes" id="tbNotes" aria-pressed="false">Notes<kbd>N</kbd></button>
   </header>
 
   <div id="viewport">
@@ -987,11 +980,6 @@ body.proto #app{visibility:hidden}
   </div>
 </div>
 
-<div id="notes" hidden>
-  <span class="label" id="notesNum">Slide 1</span>
-  <p id="notesText"></p>
-  <button id="notesClose">Close</button>
-</div>
 
 <div id="protoView" hidden>
   <div class="pv-top"><a class="small-link" href="#8">‹ Back to the deck</a><span class="foot">Vasool · Flow B prototype</span></div>
@@ -1014,18 +1002,6 @@ body.proto #app{visibility:hidden}
   let cur = 0, suppressHash = false;
 
   const SECS = ['Title','Definition','Definition','Definition','Definition','Design','Design','Delivery','Delivery','Impact'];
-  const NOTES = [
-    "I drew Membership, Benefit and Numberless. Together they describe a common problem: memberships come with countless benefits that go unused. Vasool comes from 'paisa vasool', getting full value for money. Click 'Run the draw again' if they ask how I started.",
-    "The problem is not a lack of perks. Perks are fragmented and appear at the wrong moment. Click through the four causes.",
-    "Priya stands for the primary user. Walk through her week: ₹2,170 left unused, all of it already paid for. Friday's lounge visit is the biggest single loss.",
-    "These are the assumptions the design stands on. Flip #4 first: nudge trust is the riskiest one, so it is the first thing I would test.",
-    "Trackers help you cancel, CRED rewards you with its own points, bank apps cover one card. Nobody helps you use what you already own, at the moment you can use it. Click Vasool's dot last.",
-    "Each feature maps to one of the four causes. Then use the toggle: rewarding money spent would push Priya to overspend. Vasool only rewards value gained. That is the key design decision.",
-    "Three flows. B is the critical one because that is where value is created. Click any Flow B screen to jump into the prototype.",
-    "Run the flow live. On screen 3, mention the 'Didn't work' path. On screen 4, change the saving to show the numbers carry through to screen 5.",
-    "All six screens together, and the five decisions behind them.",
-    "The North Star is ₹ recovered per active user per month. It only rises when people actually save. The four targets explain why it moves. Vasool is free for users and earns when partners' perks get used. Next step: test nudge timing with 5–8 users."
-  ];
 
   /* ---------------- deck navigation ---------------- */
   function fit() {
@@ -1041,8 +1017,6 @@ body.proto #app{visibility:hidden}
     $('#tbCount').textContent = String(i + 1).padStart(2, '0') + ' / 10';
     $('#tbProg').style.width = ((i + 1) * 10) + '%';
     $('#tbSec').textContent = SECS[i];
-    $('#notesNum').textContent = 'Slide ' + (i + 1);
-    $('#notesText').textContent = NOTES[i];
     if (narrow.matches && source !== 'init') slides[i].scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
     if (source !== 'hash' && source !== 'init') {
       const h = '#' + (i + 1);
@@ -1052,14 +1026,6 @@ body.proto #app{visibility:hidden}
   }
   $('#tbPrev').onclick = () => go(cur - 1);
   $('#tbNext').onclick = () => go(cur + 1);
-  function toggleNotes(force) {
-    const n = $('#notes');
-    const show = force !== undefined ? force : n.hidden;
-    n.hidden = !show;
-    $('#tbNotes').setAttribute('aria-pressed', String(show));
-  }
-  $('#tbNotes').onclick = () => toggleNotes();
-  $('#notesClose').onclick = () => toggleNotes(false);
   document.addEventListener('keydown', e => {
     if (document.body.classList.contains('proto') || narrow.matches) return;
     if (e.target.closest('input, textarea, select')) return;
@@ -1069,7 +1035,6 @@ body.proto #app{visibility:hidden}
     else if (k === 'ArrowLeft' || k === 'PageUp') { e.preventDefault(); go(cur - 1); }
     else if (k === 'Home') go(0);
     else if (k === 'End') go(slides.length - 1);
-    else if (k === 'n' || k === 'N') toggleNotes();
   });
   addEventListener('resize', fit);
   narrow.addEventListener?.('change', () => { fit(); });
@@ -1456,7 +1421,6 @@ body.proto #app{visibility:hidden}
     document.body.classList.add('proto');
     $('#protoView').hidden = false;
     $('#pvSlot').appendChild($('#phoneWrap'));
-    toggleNotes(false);
     fitProto();
   }
   function exitProto() {
