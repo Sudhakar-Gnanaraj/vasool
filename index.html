@@ -1,0 +1,1498 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Vasool: an interactive 10-slide design challenge deck with a live prototype of the perk nudge to reward flow.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Vasool Design Challenge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: a 1280×720 slide canvas scaled to fit the window (arrow keys to move); under 860px wide the ten slides stack into one scrolling page. */
+:root{
+  --navy:#0F1B3D; --navy-2:#18264F; --navy-3:#24345F; --on-navy:#C9D1E3; --on-navy-dim:#8D9BBD;
+  --white:#FFFFFF; --bg:#F3F5F9; --frame:#E2E7EF; --line:#DCE2EC;
+  --green:#16A34A; --green-t:#15803D; --green-b:#22C55E; --mint:#E6F5EB;
+  --grey:#5B6472; --amber:#F59E0B; --amber-t:#B45309; --amber-bg:#FDF1DD;
+  --food:#D9481F; --food-bg:#FFF6F2;
+  --f-display:"Bricolage Grotesque","Inter",system-ui,sans-serif;
+  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+html,body{height:100%}
+body{background:var(--frame);color:var(--navy);font-family:var(--f-body);font-size:16px;-webkit-font-smoothing:antialiased;overflow:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--navy)}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0}
+:focus-visible{outline:3px solid var(--green-b);outline-offset:2px}
+p{margin:0}
+h1,h2,h3,h4{margin:0}
+
+/* ---------- top bar ---------- */
+#app{height:100%;display:flex;flex-direction:column}
+.topbar{height:56px;flex:none;display:flex;align-items:center;gap:18px;background:var(--navy);color:#fff;
+  padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
+.brand{font-family:var(--f-display);font-weight:800;font-size:21px;letter-spacing:-.02em;white-space:nowrap}
+.brand i{color:var(--green-b);font-style:normal}
+.tb-sec{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--on-navy-dim);white-space:nowrap;min-width:90px}
+.tb-prog{flex:1;height:4px;background:var(--navy-3);border-radius:4px;overflow:hidden}
+.tb-prog i{display:block;height:100%;width:10%;background:var(--green-b);border-radius:4px;transition:width .4s ease}
+.tb-count{font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--on-navy)}
+.tb-nav{display:flex;gap:6px}
+.tb-btn{background:var(--navy-2);border:1px solid var(--navy-3);border-radius:10px;height:36px;min-width:38px;padding:0 12px;color:#fff;font-size:14px;font-weight:500}
+.tb-btn:hover{background:var(--navy-3)}
+.tb-btn kbd{font-family:var(--f-mono);font-size:11px;color:var(--on-navy-dim);margin-left:6px}
+
+/* ---------- stage & slides ---------- */
+#viewport{flex:1;position:relative;overflow:hidden;min-height:0}
+#stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform:translate(-50%,-50%);transform-origin:center center;
+  background:var(--bg);border-radius:8px;overflow:hidden;box-shadow:0 24px 70px rgba(15,27,61,.20)}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;gap:22px;padding:46px 64px 40px;background:var(--bg);scroll-margin-top:60px}
+.slide.active{display:flex;animation:enter .35s ease both}
+@keyframes enter{from{opacity:.25;transform:translateY(8px)}to{opacity:1;transform:none}}
+.slide.dark{background:var(--navy);color:#fff}
+.eyebrow{font-family:var(--f-mono);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--green-t);display:flex;gap:12px;align-items:center}
+.eyebrow .crit{color:var(--grey);font-weight:500}
+.dark .eyebrow{color:var(--green-b)} .dark .eyebrow .crit{color:var(--on-navy-dim)}
+h2{font-family:var(--f-display);font-size:40px;line-height:1.08;font-weight:700;letter-spacing:-.025em;margin-top:8px;text-wrap:balance;max-width:1080px}
+.lede{font-size:17px;color:var(--grey);margin-top:8px;max-width:760px;line-height:1.5}
+.sbody{flex:1;min-height:0;display:grid;gap:22px}
+.card{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:22px;min-width:0}
+.label{font-family:var(--f-mono);font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--grey)}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;padding:5px 10px;border-radius:999px;background:var(--bg);border:1px solid var(--line);white-space:nowrap}
+.tap-hint{font-size:12.5px;color:var(--grey);display:inline-flex;align-items:center;gap:6px}
+.tap-hint::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green-b);box-shadow:0 0 0 3px rgba(34,197,94,.25)}
+
+/* ---------- 1 title ---------- */
+.s1{flex-direction:row!important;align-items:center;gap:64px;padding:56px 72px}
+.s1-left{flex:1.05;min-width:0;display:flex;flex-direction:column;gap:22px}
+.s1-left h1{font-family:var(--f-display);font-size:150px;line-height:.9;font-weight:800;letter-spacing:-.05em}
+.s1-left h1 span{color:var(--green-b)}
+.s1-tag{font-size:27px;line-height:1.3;font-weight:500;color:#fff;max-width:520px;text-wrap:balance}
+.s1-gloss{font-size:15px;color:var(--on-navy);border-left:2px solid var(--green-b);padding-left:12px}
+.s1-gloss em{font-style:normal;font-weight:600;color:#fff}
+.s1-meta{font-family:var(--f-mono);font-size:12.5px;letter-spacing:.06em;color:var(--on-navy-dim);text-transform:uppercase}
+.s1-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:18px}
+.reels{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.reel{background:var(--navy-2);border:1px solid var(--navy-3);border-radius:16px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.reel small{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;color:var(--on-navy-dim)}
+.reel .w{font-family:var(--f-display);font-size:20px;font-weight:700;color:var(--on-navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reel .w.done{color:var(--green-b)}
+.brief{background:var(--navy-2);border:1px solid var(--navy-3);border-radius:20px;padding:24px}
+.brief p{font-size:21px;line-height:1.5;color:var(--on-navy)}
+.brief mark{background:none;color:#fff;font-weight:700;border-bottom:2px solid var(--green-b);transition:color .3s}
+.brief.lit mark{animation:lit .8s ease}
+@keyframes lit{0%{color:var(--green-b)}100%{color:#fff}}
+.btn-dark{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;height:40px;padding:0 16px;border-radius:12px;border:1px solid var(--navy-3);color:#fff;font-size:14px;font-weight:600}
+.btn-dark:hover{background:var(--navy-2)}
+
+/* ---------- 2 problem ---------- */
+.s2 .sbody{grid-template-columns:5fr 7fr;grid-template-rows:1fr}
+.ps{display:flex;flex-direction:column;gap:18px;justify-content:space-between}
+.ps-text{font-size:23px;line-height:1.45;font-weight:500;text-wrap:pretty}
+.ps-text b{font-weight:700}
+.hmw{background:var(--mint);border-radius:14px;padding:16px 18px;font-size:16px;line-height:1.5;color:var(--navy)}
+.hmw .label{color:var(--green-t);display:block;margin-bottom:4px}
+.causes{display:flex;flex-direction:column;gap:14px;min-width:0}
+.cause-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;flex:1;min-height:0}
+.cause{text-align:left;background:var(--white);border:1px solid var(--line);border-radius:16px;padding:20px 22px;display:flex;flex-direction:column;justify-content:center;gap:8px;transition:border-color .2s, box-shadow .2s}
+.cause:hover{border-color:#B9C3D6}
+.cause[aria-pressed="true"]{border-color:var(--navy);box-shadow:0 0 0 1px var(--navy)}
+.cause h3{font-size:19px;font-weight:700;display:flex;align-items:center;gap:8px}
+.cause h3 svg{color:var(--green-t)}
+.cause p{font-size:15px;line-height:1.45;color:var(--grey)}
+.cause-detail{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:18px 20px}
+.cause-detail p{font-size:15px;line-height:1.5;margin-top:6px}
+.callout{grid-column:1 / -1;background:var(--navy);color:#fff;border-radius:16px;padding:16px 22px;display:flex;gap:18px;align-items:center}
+.callout .label{color:var(--green-b);white-space:nowrap}
+.callout p{font-size:15.5px;line-height:1.45;color:var(--on-navy)}
+.callout p b{color:#fff}
+
+/* ---------- 3 persona ---------- */
+.s3 .sbody{grid-template-columns:4fr 7fr}
+.persona{display:flex;flex-direction:column;gap:16px}
+.p-head{display:flex;gap:14px;align-items:center}
+.avatar{width:58px;height:58px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:24px;flex:none}
+.p-name{font-family:var(--f-display);font-size:26px;font-weight:700;letter-spacing:-.02em}
+.p-role{font-size:14px;color:var(--grey)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.p-quote{font-size:17px;line-height:1.45;font-weight:500;border-left:3px solid var(--green);padding-left:14px}
+.p-line{font-size:14px;line-height:1.5;color:var(--grey)}
+.p-line b{color:var(--navy);font-weight:600}
+.week{display:flex;flex-direction:column;gap:16px}
+.week-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.week-top h3{font-size:19px;font-weight:700}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.day{border:1px solid var(--line);border-radius:12px;padding:10px 4px 9px;display:flex;flex-direction:column;align-items:center;gap:7px;font-size:13.5px;font-weight:600;background:var(--white)}
+.day i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.day i.miss{background:var(--amber)} .day i.used{background:var(--green)} .day i.waste{background:var(--amber)} .day i.unknown{background:#9AA3B2}
+.day[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.event{background:var(--bg);border-radius:14px;padding:20px 22px;display:grid;grid-template-columns:1fr auto;gap:8px 24px;align-items:start;min-height:190px}
+.ev-time{font-family:var(--f-mono);font-size:12px;color:var(--grey);letter-spacing:.04em;grid-column:1/-1}
+.ev-title{font-family:var(--f-display);font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.ev-amt{font-family:var(--f-display);font-size:26px;font-weight:800;white-space:nowrap;padding:6px 12px;border-radius:12px;align-self:start}
+.ev-amt.miss,.ev-amt.waste{color:var(--amber-t);background:var(--amber-bg)} .ev-amt.used{color:var(--green-t);background:var(--mint)} .ev-amt.unknown{color:var(--grey);background:var(--white)}
+.ev-perk{grid-column:1/-1;font-size:15px}
+.ev-perk .label{margin-right:8px}
+.ev-res{grid-column:1/-1;font-size:15px;line-height:1.5;color:var(--grey)}
+.week-sum{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sum{border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sum b{font-family:var(--f-display);font-size:30px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.sum.miss{background:var(--amber-bg)} .sum.miss b{color:var(--amber-t)}
+.sum.used{background:var(--mint)} .sum.used b{color:var(--green-t)}
+.sum span{font-size:14px;font-weight:500}
+.foot{font-size:12.5px;color:var(--grey)}
+
+/* ---------- 4 assumptions ---------- */
+.s4 .sbody{grid-template-columns:repeat(4,1fr);grid-template-rows:1fr 1fr}
+.flip{perspective:1200px;min-width:0;min-height:0;text-align:left;border-radius:16px}
+.flip-in{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.3,.7,.2,1);transform-style:preserve-3d}
+.flip[aria-pressed="true"] .flip-in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;border-radius:16px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:10px;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.front{background:var(--white);border:1px solid var(--line)}
+.flip:hover .front{border-color:#B9C3D6}
+.back{background:var(--navy);color:#fff;transform:rotateY(180deg);gap:8px}
+.f-top{display:flex;justify-content:space-between;align-items:center}
+.f-num{font-family:var(--f-mono);font-size:12px;color:var(--grey)}
+.f-tag{font-family:var(--f-mono);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:var(--bg);color:var(--navy)}
+.f-tag.risk{background:var(--amber-bg);color:var(--amber-t)}
+.front p{font-size:16px;line-height:1.42;font-weight:500;flex:1}
+.f-flip{font-size:12.5px;color:var(--grey);display:flex;align-items:center;gap:6px}
+.back .label{color:var(--green-b)}
+.back .label.w{color:#FBBF6A}
+.back p{font-size:13.5px;line-height:1.42;color:var(--on-navy)}
+.a-sum{background:var(--mint);border:1px solid #C6E8D2;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px;justify-content:space-between}
+.a-sum p{font-size:15px;line-height:1.45}
+.a-sum b{font-weight:700}
+.btn-line{display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-radius:12px;border:1px solid var(--navy);font-size:14px;font-weight:600;align-self:flex-start;background:var(--white)}
+.btn-line:hover{background:var(--navy);color:#fff}
+
+/* ---------- 5 market ---------- */
+.s5 .sbody{grid-template-columns:500px 1fr;align-items:start}
+.map-wrap{display:flex;flex-direction:column;gap:8px;min-width:0}
+.map{position:relative;width:470px;height:470px;max-width:100%;background:var(--white);border:1px solid var(--line);border-radius:16px;margin-left:24px}
+.map::before,.map::after{content:"";position:absolute;background:var(--line)}
+.map::before{left:50%;top:14px;bottom:14px;width:1px}
+.map::after{top:50%;left:14px;right:14px;height:1px}
+.quad{position:absolute;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:#9AA3B2}
+.ax{position:absolute;font-size:12.5px;font-weight:600;color:var(--grey);white-space:nowrap}
+.ax-y{left:-24px;top:50%;transform:translate(-50%,-50%) rotate(-90deg);transform-origin:center}
+.dot{position:absolute;transform:translate(-50%,50%);display:flex;align-items:center;gap:8px;z-index:1}
+.dot i{width:16px;height:16px;border-radius:50%;background:var(--grey);border:3px solid var(--white);box-shadow:0 0 0 1px var(--grey);flex:none}
+.dot span{font-size:13px;font-weight:600;white-space:nowrap;background:var(--white);padding:2px 6px;border-radius:6px}
+.dot.l{flex-direction:row-reverse}
+.dot.me i{width:24px;height:24px;background:var(--green-b);box-shadow:0 0 0 2px var(--navy)}
+.dot.me span{background:var(--navy);color:#fff;font-family:var(--f-display);font-size:15px}
+.dot[aria-pressed="true"] i{box-shadow:0 0 0 2px var(--navy),0 0 0 7px rgba(34,197,94,.3)}
+.mk-side{display:flex;flex-direction:column;gap:16px;min-width:0}
+.mk-detail h3{font-family:var(--f-display);font-size:24px;font-weight:700;letter-spacing:-.02em}
+.mk-detail .eg{font-size:13px;color:var(--grey);margin-top:2px}
+.mk-row{display:grid;grid-template-columns:110px 1fr;gap:12px;margin-top:14px;font-size:15px;line-height:1.45}
+.mk-row .label{padding-top:3px}
+.mk-row.gap p{font-weight:600}
+.position{background:var(--navy);color:#fff;border-radius:20px;padding:22px 24px}
+.position .label{color:var(--green-b)}
+.position p{font-family:var(--f-display);font-size:27px;font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-top:8px;text-wrap:balance}
+.diffs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.diff{padding:16px}
+.diff h4{font-size:16px;font-weight:700;margin-bottom:4px}
+.diff p{font-size:13.5px;line-height:1.4;color:var(--grey)}
+
+/* ---------- 6 solution ---------- */
+.s6 .sbody{grid-template-columns:1fr 1fr}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.col-h{display:flex;justify-content:space-between;align-items:baseline}
+.col-h h3{font-size:18px;font-weight:700}
+.feat-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.feat{text-align:left;background:var(--white);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;gap:12px;align-items:center}
+.feat:hover{border-color:#B9C3D6}
+.feat[aria-pressed="true"]{border-color:var(--navy);box-shadow:0 0 0 1px var(--navy)}
+.feat .ic{width:36px;height:36px;border-radius:10px;background:var(--bg);display:grid;place-items:center;color:var(--navy);flex:none}
+.feat[aria-pressed="true"] .ic{background:var(--navy);color:var(--green-b)}
+.feat b{font-size:15.5px;font-weight:700}
+.feat-detail{display:flex;flex-direction:column;gap:12px;flex:1}
+.feat-detail p{font-size:16.5px;line-height:1.5}
+.fd-meta{display:flex;gap:8px;flex-wrap:wrap}
+.fd-meta .chip.solves{background:var(--amber-bg);border-color:#F4D7A6;color:var(--amber-t)}
+.fd-meta .chip.where{background:var(--mint);border-color:#C6E8D2;color:var(--green-t)}
+.mech{display:flex;flex-direction:column}
+.mech-row{display:grid;grid-template-columns:170px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px;align-items:baseline}
+.mech-row:last-child{border-bottom:0}
+.mech-row b{font-weight:700}
+.mech-row span{color:var(--grey)}
+.ethic{display:flex;flex-direction:column;gap:12px;padding:18px 20px}
+.ethic-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.ethic-top h3{font-size:17px;font-weight:700}
+.seg{display:inline-flex;background:var(--bg);border-radius:12px;padding:4px;gap:4px}
+.seg button{height:34px;padding:0 14px;border-radius:9px;font-size:13.5px;font-weight:600;color:var(--grey)}
+.seg button[aria-pressed="true"]{background:var(--navy);color:#fff}
+.seg button.bad[aria-pressed="true"]{background:var(--amber-t)}
+.scen{font-size:14px;color:var(--grey)}
+.out{border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14.5px;line-height:1.45}
+.out.good{background:var(--mint)} .out.bad{background:var(--amber-bg)}
+.out .k{font-family:var(--f-mono);font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding-top:3px}
+.out.good .k{color:var(--green-t)} .out.bad .k{color:var(--amber-t)}
+.out .verdict{grid-column:1/-1;font-weight:700;margin-top:4px}
+
+/* ---------- 7 flows ---------- */
+.s7 .sbody{grid-template-rows:auto auto auto;align-content:space-between;gap:18px}
+.lane{display:grid;grid-template-columns:190px 1fr;gap:18px;align-items:center;padding:22px 22px;border-radius:16px;background:var(--white);border:1px solid var(--line)}
+.lane.crit{background:var(--navy);color:#fff;border-color:var(--navy);padding-block:20px}
+.lane-h b{display:block;font-family:var(--f-display);font-size:20px;font-weight:700;letter-spacing:-.01em}
+.lane-h span{font-size:13px;color:var(--grey)}
+.lane.crit .lane-h span{color:var(--green-b);font-weight:600}
+.nodes{display:flex;align-items:center;gap:6px;min-width:0;overflow-x:auto;padding:4px 2px}
+.node{flex:1 1 0;min-width:92px;border-radius:12px;padding:13px 12px;font-size:14.5px;line-height:1.3;background:var(--bg);border:1px solid var(--line);text-align:left}
+.node small{display:block;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;color:var(--grey);margin-bottom:3px}
+.crit .node{background:var(--navy-2);border-color:var(--navy-3);color:#fff}
+.crit .node small{color:var(--on-navy-dim)}
+.crit button.node:hover{border-color:var(--green-b)}
+.crit button.node small{color:var(--green-b)}
+.crit .node.ext{border-style:dashed;background:transparent}
+.arr{flex:none;color:#9AA3B2;display:flex}
+.crit .arr{color:var(--on-navy-dim)}
+.exits{grid-column:2;display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--on-navy)}
+.exits .chip{background:transparent;border:1px dashed var(--on-navy-dim);color:#fff}
+.flow-note{display:flex;gap:16px;align-items:center;font-size:14.5px;line-height:1.5;color:var(--grey)}
+.flow-note b{color:var(--navy)}
+
+/* ---------- 8 prototype ---------- */
+.s8{flex-direction:row!important;gap:56px;align-items:center;padding:44px 64px 40px 80px}
+.phone-slot{flex:none;display:flex;justify-content:center}
+.panel{flex:1;min-width:0;display:flex;flex-direction:column;gap:18px}
+.steps{display:flex;gap:6px;flex-wrap:wrap}
+.step{height:34px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--white);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:7px;color:var(--grey)}
+.step i{font-style:normal;font-family:var(--f-mono);font-size:11.5px}
+.step[aria-current="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.why{display:flex;flex-direction:column;gap:12px}
+.why h3{font-family:var(--f-display);font-size:24px;font-weight:700;letter-spacing:-.02em}
+.why p{font-size:16.5px;line-height:1.55}
+.try{background:var(--mint);border-radius:12px;padding:12px 14px;font-size:14.5px;line-height:1.45}
+.try b{color:var(--green-t)}
+.ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{height:46px;padding:0 18px;border-radius:14px;font-size:15px;font-weight:600;display:inline-flex;align-items:center;gap:8px}
+.btn.pri{background:var(--navy);color:#fff}
+.btn.pri:hover{background:var(--navy-3)}
+.btn.sec{background:var(--white);border:1px solid var(--line)}
+.btn.sec:hover{border-color:var(--navy)}
+.btn.sec:disabled{opacity:.45;cursor:default}
+.btn.txt{color:var(--grey);padding:0 8px}
+.pulse-ctl{animation:pulseCtl 1.8s ease-in-out infinite}
+@keyframes pulseCtl{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.55)}50%{box-shadow:0 0 0 8px rgba(34,197,94,0)}}
+.small-link{font-size:14px;font-weight:600;color:var(--navy);text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- 9 overview ---------- */
+.thumbs{display:flex;gap:20px;justify-content:space-between;overflow-x:auto;padding-bottom:4px}
+.thumb{display:flex;flex-direction:column;gap:8px;align-items:center;flex:none;text-align:center;border-radius:20px;margin:0}
+.tframe{width:calc(412px * .315);height:calc(866px * .315);position:relative;overflow:hidden;border-radius:18px}
+.tframe .phone{position:absolute;left:0;top:0;transform:scale(.315);transform-origin:top left;box-shadow:none;pointer-events:none}
+.thumb span{font-size:13px;font-weight:600}
+.thumb span i{font-style:normal;font-family:var(--f-mono);font-size:11px;color:var(--grey);margin-right:4px}
+.decisions{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.dec{padding:16px}
+.dec h4{font-size:15px;font-weight:700;margin-bottom:6px;line-height:1.3}
+.dec p{font-size:13.5px;line-height:1.45;color:var(--grey)}
+
+/* ---------- 10 metrics ---------- */
+.s10 .sbody{grid-template-columns:1fr}
+.s10 .right10{grid-template-rows:auto auto 1fr;align-content:stretch}
+.s10 .ns p{font-size:32px}
+.s10 .ns .why-ns{font-size:15px;max-width:420px}
+.s10 .tg{padding:18px 20px}
+.s10 .tg b{font-size:34px}
+.s10 .tg p{font-size:14.5px}
+.s10 .li{font-size:16px}
+.s10 .list{gap:12px;margin-top:14px}
+.s10 .list-card{padding:22px 24px}
+.calc{display:flex;flex-direction:column;gap:10px;padding:18px 20px}
+.calc h3{font-size:18px;font-weight:700}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.opt{display:flex;gap:9px;align-items:flex-start;padding:7px 10px;border-radius:12px;border:1px solid var(--line);cursor:pointer;font-size:13.5px;line-height:1.3}
+.opt:has(input:checked){border-color:var(--navy);background:#F7F9FC}
+.opt input{accent-color:var(--navy);margin:2px 0 0;width:16px;height:16px;flex:none}
+.opt small{display:block;color:var(--grey);font-size:12px;margin-top:2px}
+.opt b{font-weight:600}
+.range{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.range-top{display:flex;justify-content:space-between}
+.range-top b{font-variant-numeric:tabular-nums}
+.range input{width:100%;accent-color:var(--green)}
+.res{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:8px}
+.res div{border-radius:12px;padding:10px 12px;background:var(--bg)}
+.res small{display:block;font-size:12px;color:var(--grey)}
+.res b{font-family:var(--f-display);font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.res .big{background:var(--amber-bg)} .res .big b{color:var(--amber-t);font-size:24px}
+.right10{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-content:start}
+.ns{grid-column:1/-1;background:var(--navy);color:#fff;border-radius:20px;padding:20px 22px;display:flex;justify-content:space-between;gap:18px;align-items:center}
+.ns .label{color:var(--green-b)}
+.ns p{font-family:var(--f-display);font-size:25px;font-weight:700;letter-spacing:-.02em;margin-top:6px;line-height:1.15}
+.ns .why-ns{font-size:13.5px;color:var(--on-navy);max-width:270px;line-height:1.45}
+.targets{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tg{padding:14px}
+.tg b{font-family:var(--f-display);font-size:26px;font-weight:800;color:var(--green-t);letter-spacing:-.02em}
+.tg p{font-size:13px;line-height:1.35;color:var(--grey);margin-top:2px}
+.list{display:flex;flex-direction:column;gap:9px;margin-top:10px}
+.li{display:grid;grid-template-columns:auto 1fr;gap:10px;font-size:14px;line-height:1.4}
+.li .n{font-family:var(--f-mono);font-size:11.5px;color:var(--green-t);font-weight:600;padding-top:2px}
+.li b{font-weight:600}
+.list-card{padding:18px}
+
+/* ---------- notes ---------- */
+#notes{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(860px, calc(100% - 32px));background:var(--navy);color:#fff;border-radius:16px;padding:16px 20px;box-shadow:0 20px 50px rgba(15,27,61,.35);z-index:40;display:flex;gap:16px;align-items:flex-start}
+#notes .label{color:var(--green-b);white-space:nowrap;padding-top:3px}
+#notes p{font-size:15px;line-height:1.5;color:var(--on-navy);flex:1}
+#notes button{color:var(--on-navy-dim);font-size:13px}
+
+/* ================= PHONE (390 × 844) ================= */
+.phone-wrap{--ps:.71;width:calc(412px * var(--ps));height:calc(866px * var(--ps));position:relative;flex:none}
+.phone-wrap > .phone{position:absolute;left:0;top:0;transform:scale(var(--ps));transform-origin:top left}
+.phone{box-sizing:content-box;width:390px;height:844px;border:11px solid #0A1128;border-radius:58px;overflow:hidden;position:relative;background:var(--bg);color:var(--navy);font-family:var(--f-body);font-size:16px;box-shadow:0 30px 60px rgba(15,27,61,.28);isolation:isolate}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:122px;height:35px;border-radius:20px;background:#000;z-index:60}
+.status{position:absolute;top:0;left:0;right:0;height:50px;padding:16px 30px 0 36px;display:flex;justify-content:space-between;font-size:16px;font-weight:600;z-index:55;color:var(--navy);pointer-events:none}
+.status .sicons{display:flex;gap:6px;align-items:center}
+.dark-status .status{color:#fff}
+.homebar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:136px;height:5px;border-radius:3px;background:var(--navy);z-index:55;pointer-events:none}
+.dark-status .homebar{background:#fff}
+.screen{position:absolute;inset:0;display:none;overflow:hidden}
+.screen.on{display:block}
+.app-scroll{position:absolute;inset:0;overflow-y:auto;scrollbar-width:none;padding:56px 20px 110px}
+.app-scroll::-webkit-scrollbar{display:none}
+
+/* home */
+.h-top{display:flex;justify-content:space-between;align-items:center;margin:6px 0 16px}
+.h-hi{font-size:13px;color:var(--grey)}
+.h-name{font-size:24px;font-weight:700;letter-spacing:-.02em}
+.streak{display:inline-flex;align-items:center;gap:5px;background:var(--amber-bg);color:var(--amber-t);font-size:13px;font-weight:600;padding:7px 11px;border-radius:999px}
+.hero{background:var(--navy);color:#fff;border-radius:20px;padding:20px}
+.hero-l{font-size:13px;color:var(--on-navy)}
+.hero-n{font-size:44px;font-weight:800;letter-spacing:-.03em;margin:4px 0 12px;font-variant-numeric:tabular-nums}
+.pbar{height:8px;border-radius:5px;background:#E4E8EF;overflow:hidden}
+.pbar i{display:block;height:100%;border-radius:5px;background:var(--green)}
+.pbar.on-dark{background:#2A3A66} .pbar.on-dark i{background:var(--green-b)}
+.pbar.amber i{background:var(--amber)}
+.hero-s{font-size:13px;color:var(--on-navy);margin-top:10px}
+.mission{background:var(--white);border-radius:16px;padding:16px;margin-top:14px;border:1px solid #E6EAF0}
+.m-top{display:flex;justify-content:space-between;align-items:center}
+.m-eye{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green-t)}
+.m-count{font-size:13px;font-weight:600;color:var(--grey)}
+.m-title{font-size:17px;font-weight:600;margin:6px 0 10px}
+.m-dots{display:flex;gap:6px}
+.m-dots i{flex:1;height:8px;border-radius:4px;background:#E4E8EF}
+.m-dots i.f{background:var(--green)}
+.m-rew{font-size:13px;color:var(--grey);margin-top:10px}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;margin:20px 2px 10px;font-size:17px;font-weight:600}
+.sec-h span:last-child{font-size:13px;color:var(--green-t);font-weight:600}
+.mlist{background:var(--white);border-radius:16px;border:1px solid #E6EAF0;padding:4px 14px}
+.mrow{display:grid;grid-template-columns:38px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid #EEF1F5}
+.mrow:last-child{border-bottom:0}
+.tile{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;color:#fff;font-size:12.5px;font-weight:700}
+.m-name{font-size:15px;font-weight:600;margin-bottom:6px}
+.m-sub{font-size:12px;color:var(--grey);font-weight:400;margin-left:4px}
+.mrow .pbar{height:6px}
+.m-roi{font-size:14px;font-weight:700;text-align:right;min-width:62px;font-variant-numeric:tabular-nums}
+.pill-g{display:inline-block;font-size:12px;font-weight:700;color:var(--green-t);background:var(--mint);padding:4px 8px;border-radius:999px}
+.roi-a{color:var(--amber-t)}
+.review{display:block;font-size:11.5px;font-weight:600;color:var(--amber-t)}
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:86px;background:var(--white);border-top:1px solid #E6EAF0;display:grid;grid-template-columns:repeat(4,1fr);padding:10px 8px 0;z-index:5}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#8A93A3}
+.tab.on{color:var(--navy)}
+
+/* food app (screen 2) */
+.food{position:absolute;inset:0;background:var(--white);padding:56px 18px 0}
+.food-top{display:flex;align-items:center;gap:12px;margin:4px 0 16px}
+.food-top .bk{font-size:24px;line-height:1}
+.food-logo{font-weight:800;font-size:19px;color:var(--food);letter-spacing:-.02em}
+.food-top .t{font-size:17px;font-weight:600;margin-left:auto;color:var(--grey)}
+.rest{display:flex;gap:12px;align-items:center;background:var(--food-bg);border-radius:14px;padding:12px}
+.rest .img{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#F3A64A,#D9481F)}
+.rest b{display:block;font-size:16px}
+.rest span{font-size:13px;color:var(--grey)}
+.items{margin-top:14px}
+.item{display:flex;justify-content:space-between;padding:12px 2px;border-bottom:1px solid #F0F0F0;font-size:15px}
+.item small{display:block;color:var(--grey);font-size:12.5px}
+.bill{margin-top:12px;font-size:14px;color:var(--grey)}
+.bill div{display:flex;justify-content:space-between;padding:5px 2px}
+.bill .tot{color:var(--navy);font-weight:700;font-size:17px;border-top:1px dashed #DDD;margin-top:6px;padding-top:10px}
+.paybar{position:absolute;left:0;right:0;bottom:0;padding:14px 18px 34px;background:var(--white);border-top:1px solid #EEE;display:flex;gap:12px;align-items:center}
+.paybar .pm{font-size:12.5px;color:var(--grey);flex:1}
+.paybar .pm b{display:block;color:var(--navy);font-size:15px}
+.paybar .po{background:var(--food);color:#fff;border-radius:12px;height:50px;padding:0 20px;display:flex;align-items:center;font-weight:700;font-size:15px}
+.dim{position:absolute;inset:0;background:rgba(10,17,40,.55);z-index:10}
+.notif{position:absolute;left:12px;right:12px;top:58px;z-index:20;background:rgba(255,255,255,.98);border-radius:24px;padding:16px;box-shadow:0 18px 40px rgba(0,0,0,.25);animation:drop .5s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes drop{from{transform:translateY(-120%)}to{transform:none}}
+.n-top{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--grey);font-weight:500}
+.appic{width:24px;height:24px;border-radius:7px;background:var(--navy);color:var(--green-b);display:grid;place-items:center;font-weight:800;font-size:13px}
+.n-title{font-size:17px;font-weight:700;margin:10px 0 4px}
+.n-body{font-size:15px;line-height:1.4;color:#2B3446}
+.gchip{display:inline-flex;gap:6px;align-items:center;margin-top:12px;font-size:13px;font-weight:600;color:var(--green-t);background:var(--mint);border-radius:999px;padding:6px 11px}
+.n-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.pbtn{height:54px;border-radius:14px;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;width:100%}
+.pbtn.navy{background:var(--navy);color:#fff}
+.pbtn.ghost{background:#EEF1F6;color:var(--navy)}
+.pbtn.green{background:var(--green-b);color:var(--navy);font-weight:700}
+.pbtn.outline{border:1.5px solid #D5DBE5;color:var(--navy);background:var(--white)}
+.plink{height:44px;width:100%;font-size:15px;font-weight:600;color:var(--grey);display:flex;align-items:center;justify-content:center}
+.pulse{animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.65)}50%{box-shadow:0 0 0 9px rgba(34,197,94,0)}}
+
+/* perk card (screen 3) */
+.nav3{display:flex;align-items:center;gap:10px;margin:2px 0 16px}
+.backbtn{width:44px;height:44px;border-radius:14px;background:var(--white);border:1px solid #E3E7EE;display:grid;place-items:center}
+.nav3 b{font-size:17px;font-weight:600}
+.perk{background:var(--navy);color:#fff;border-radius:20px;padding:20px;position:relative;overflow:hidden}
+.perk::after{content:"";position:absolute;right:-40px;top:-40px;width:150px;height:150px;border-radius:50%;border:24px solid rgba(34,197,94,.14)}
+.perk-top{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--on-navy);position:relative;z-index:1}
+.best{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--navy);background:var(--green-b);padding:4px 8px;border-radius:6px}
+.perk-big{font-size:52px;font-weight:800;letter-spacing:-.03em;margin:14px 0 2px;line-height:1}
+.perk-sv{font-size:16px;color:var(--green-b);font-weight:600}
+.perk-on{font-size:13px;color:var(--on-navy);margin-top:4px}
+.h3p{font-size:20px;font-weight:600;margin:22px 2px 12px}
+.psteps{background:var(--white);border-radius:16px;border:1px solid #E6EAF0;padding:6px 16px}
+.pst{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #EEF1F5;font-size:15.5px;line-height:1.35}
+.pst:last-child{border-bottom:0}
+.pst i{width:30px;height:30px;border-radius:50%;background:var(--bg);display:grid;place-items:center;font-style:normal;font-weight:700;font-size:14px}
+.terms-btn{margin-top:12px;width:100%;background:var(--white);border:1px solid #E6EAF0;border-radius:14px;min-height:50px;padding:0 16px;display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:600}
+.terms-btn svg{transition:transform .2s}
+.terms-btn[aria-expanded="true"] svg{transform:rotate(180deg)}
+.terms{padding:12px 16px 2px;font-size:14px;color:var(--grey);line-height:1.6}
+.bcta{position:absolute;left:0;right:0;bottom:0;padding:14px 20px 30px;background:linear-gradient(to top, var(--bg) 75%, rgba(243,245,249,0));display:flex;flex-direction:column;gap:6px;z-index:6}
+
+/* confirm (screen 4) */
+.bg-home{position:absolute;inset:0;pointer-events:none}
+.mini{position:absolute;left:12px;right:12px;top:58px;z-index:20;background:rgba(255,255,255,.96);border-radius:18px;padding:12px 14px;display:flex;gap:10px;align-items:center;font-size:13.5px;box-shadow:0 10px 30px rgba(0,0,0,.2);animation:drop .5s ease both}
+.mini .fi{width:24px;height:24px;border-radius:7px;background:var(--food);color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px;flex:none}
+.mini b{font-weight:600}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:20;background:var(--white);border-radius:28px 28px 0 0;padding:12px 22px 32px;animation:up .45s cubic-bezier(.2,.9,.3,1) both}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+.grab{width:40px;height:5px;border-radius:3px;background:#D9DEE6;margin:0 auto 18px}
+.sheet h3{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.sheet .sub{font-size:14.5px;color:var(--grey);margin-top:4px}
+.save{margin-top:18px;border:1.5px solid #D5DBE5;border-radius:14px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.save:focus-within{border-color:var(--navy)}
+.save label{font-size:13px;color:var(--grey);display:block}
+.save .val{display:flex;align-items:baseline;font-size:32px;font-weight:800}
+.save input{font:inherit;border:0;outline:0;width:90px;padding:0;color:var(--navy);background:transparent;-moz-appearance:textfield}
+.save input::-webkit-outer-spin-button,.save input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.save .ed{font-size:13px;font-weight:600;color:var(--green-t);display:flex;align-items:center;gap:4px}
+.save-help{font-size:12.5px;color:var(--grey);margin-top:6px}
+.gnote{margin-top:14px;background:var(--mint);color:var(--green-t);border-radius:12px;padding:11px 14px;font-size:14px;font-weight:600;display:flex;gap:8px;align-items:center}
+.sheet .pbtn{margin-top:16px}
+
+/* reward (screen 5) */
+.rew{background:var(--navy);color:#fff}
+.confetti{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+.rew-c{position:absolute;inset:0;padding:96px 26px 0;display:flex;flex-direction:column;align-items:center;text-align:center;z-index:2}
+.chk{width:72px;height:72px;border-radius:50%;background:var(--green-b);color:var(--navy);display:grid;place-items:center;animation:popin .5s cubic-bezier(.2,.9,.3,1.4) both}
+@keyframes popin{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+.rew-plus{font-size:20px;font-weight:700;color:var(--green-b);margin-top:18px}
+.rew-l{font-size:14px;color:var(--on-navy);margin-top:22px}
+.rew-n{font-size:58px;font-weight:800;letter-spacing:-.035em;font-variant-numeric:tabular-nums;line-height:1.1}
+.rr{width:100%;background:var(--navy-2);border:1px solid var(--navy-3);border-radius:18px;padding:16px;margin-top:26px;text-align:left}
+.rr-top{display:flex;justify-content:space-between;font-size:14.5px;margin-bottom:10px;color:var(--on-navy)}
+.rr-top b{color:#fff;font-weight:700}
+.was{text-decoration:line-through;color:var(--on-navy-dim)}
+.rr .pbar{height:10px}
+.rr2{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.stat{background:var(--navy-2);border:1px solid var(--navy-3);border-radius:16px;padding:14px;text-align:left}
+.stat small{display:block;font-size:13px;color:var(--on-navy)}
+.stat b{font-size:22px;font-weight:800;display:inline-block}
+.stat b.pop{animation:popin .45s cubic-bezier(.2,.9,.3,1.5)}
+.rew .bcta{background:none}
+
+/* badge (screen 6) */
+.s6p{text-align:center;padding-top:80px}
+.badge{width:170px;height:186px;margin:0 auto;display:block;animation:popin .6s cubic-bezier(.2,.9,.3,1.3) both}
+.b-eye{font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--green-t);margin-top:18px;text-transform:uppercase}
+.b-name{font-size:32px;font-weight:800;letter-spacing:-.02em;margin-top:4px}
+.b-txt{font-size:16px;line-height:1.5;color:#3A4456;margin:10px auto 0;max-width:300px}
+.next{margin-top:26px;background:var(--white);border:1px solid #E6EAF0;border-radius:16px;padding:16px;display:flex;gap:14px;align-items:center;text-align:left}
+.next .pi{width:46px;height:46px;border-radius:13px;background:var(--bg);display:grid;place-items:center;flex:none}
+.next small{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--grey);text-transform:uppercase}
+.next b{display:block;font-size:15.5px;font-weight:600;margin:3px 0}
+.next span{font-size:13px;color:var(--grey)}
+.ptoast{position:absolute;left:24px;right:24px;bottom:150px;z-index:70;background:var(--navy);color:#fff;border-radius:14px;padding:12px 16px;font-size:14px;line-height:1.4;text-align:center;opacity:0;transform:translateY(10px);transition:opacity .25s, transform .25s;pointer-events:none}
+.ptoast.show{opacity:1;transform:none}
+
+/* ---------- full-screen prototype view ---------- */
+#protoView{position:fixed;inset:0;background:var(--frame);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:16px}
+#protoView .ctl{justify-content:center}
+.pv-top{display:flex;gap:14px;align-items:center;font-size:14px}
+body.proto #app{visibility:hidden}
+
+/* ---------- narrow screens: stacked deck ---------- */
+@media (max-width: 860px){
+  body{overflow:auto}
+  #app{height:auto;min-height:100%}
+  .topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+  .tb-prog,.tb-count,.tb-nav,.tb-notes{display:none}
+  .tb-sec{display:none}
+  #viewport{overflow:visible}
+  #stage{position:static;width:auto;height:auto;transform:none!important;box-shadow:none;border-radius:0;overflow:visible}
+  .slide{position:relative;display:flex;height:auto;animation:none!important;border-bottom:1px solid var(--line);
+    padding-top:36px;padding-bottom:40px;padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
+  .slide.dark{border-bottom:0}
+  .cols,.s2 .sbody,.s3 .sbody,.s5 .sbody,.s6 .sbody,.s10 .sbody,.cause-detail,.diffs,.decisions,.right10,.week-sum,.feat-list,.res{grid-template-columns:1fr!important}
+  .s4 .sbody{grid-template-columns:1fr 1fr!important;grid-template-rows:none!important}
+  .flip{min-height:250px}
+  h2{font-size:30px}
+  .s1,.s8{flex-direction:column!important;align-items:stretch;gap:32px}
+  .s1-left h1{font-size:96px}
+  .s1-tag{font-size:22px}
+  .reels{grid-template-columns:1fr}
+  .callout{flex-direction:column;align-items:flex-start;gap:8px}
+  .map{width:100%;height:auto;aspect-ratio:1;margin-left:24px;max-width:calc(100% - 24px)}
+  .lane{grid-template-columns:1fr}
+  .exits{grid-column:1}
+  .nodes{flex-wrap:nowrap}
+  .node{min-width:110px}
+  .phone-slot{justify-content:center}
+  .targets{grid-template-columns:1fr 1fr}
+  .opts{grid-template-columns:1fr}
+  .ns{flex-direction:column;align-items:flex-start}
+  .event{grid-template-columns:1fr}
+  .thumbs{justify-content:flex-start}
+  #notes{display:none!important}
+}
+@media (max-width: 480px){ .s4 .sbody{grid-template-columns:1fr!important} .days{gap:4px} .day{font-size:12px} }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
+
+<div id="app">
+  <header class="topbar">
+    <div class="brand">Vasool<i>.</i></div>
+    <div class="tb-sec" id="tbSec">Title</div>
+    <div class="tb-prog" aria-hidden="true"><i id="tbProg"></i></div>
+    <div class="tb-count" id="tbCount">01 / 10</div>
+    <div class="tb-nav">
+      <button class="tb-btn" id="tbPrev" aria-label="Previous slide">‹</button>
+      <button class="tb-btn" id="tbNext" aria-label="Next slide">›</button>
+    </div>
+    <button class="tb-btn tb-notes" id="tbNotes" aria-pressed="false">Notes<kbd>N</kbd></button>
+  </header>
+
+  <div id="viewport">
+    <main id="stage">
+
+      <!-- 1 TITLE -->
+      <section class="slide dark s1 active" id="slide-1" aria-label="Slide 1, title">
+        <div class="s1-left">
+          <div class="eyebrow">Design challenge <span class="crit">UX Design Intern · Cohesity</span></div>
+          <h1>Vasool<span>.</span></h1>
+          <p class="s1-tag">Get your money's worth from what you already pay for.</p>
+          <p class="s1-gloss"><em>paisa vasool</em> (Hindi slang): full value for the money you spent.</p>
+          <div class="s1-meta">Sudhakar · Mobile app concept · Nov 2026</div>
+        </div>
+        <div class="s1-right">
+          <div class="label" style="color:var(--on-navy-dim)">The draw from a random word generator</div>
+          <div class="reels">
+            <div class="reel"><small>NOUN</small><div class="w done">Membership</div></div>
+            <div class="reel"><small>VERB</small><div class="w done">Benefit</div></div>
+            <div class="reel"><small>ADJECTIVE</small><div class="w done">Numberless</div></div>
+          </div>
+          <div class="brief" id="brief">
+            <div class="label" style="color:var(--green-b);margin-bottom:10px">The brief</div>
+            <p>Vasool helps people actually use the <mark>numberless</mark> <mark>benefits</mark> inside the <mark>memberships</mark> they already pay for, by showing the right perk at the moment of purchase and turning value recovery into a game.</p>
+          </div>
+          <button class="btn-dark" id="respin"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Run the draw again</button>
+        </div>
+      </section>
+
+      <!-- 2 PROBLEM -->
+      <section class="slide s2" id="slide-2" aria-label="Slide 2, problem">
+        <div>
+          <div class="eyebrow">02 · Problem <span class="crit">Definition</span></div>
+          <h2>People pay for perks, then forget they have them</h2>
+        </div>
+        <div class="sbody">
+          <div class="card ps">
+            <div class="label">Problem statement</div>
+            <p class="ps-text">Urban Indian professionals pay for <b>multiple memberships</b> but use only a fraction of the benefits, because perks are scattered across apps, cards and fine print, and <b>nobody reminds them at the moment a perk could be used.</b></p>
+            <div class="hmw"><span class="label">How might we</span>bring the right perk to people at the moment they can use it, and make using it feel rewarding?</div>
+          </div>
+          <div class="causes">
+            <div style="display:flex;justify-content:space-between;align-items:baseline"><div class="label">Four causes</div><span class="tap-hint">Click a cause</span></div>
+            <div class="cause-grid" id="causes">
+              <button class="cause" data-c="0" aria-pressed="true"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Fragmentation</h3><p>Perks live in many apps, cards, emails and PDFs.</p></button>
+              <button class="cause" data-c="1" aria-pressed="false"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg>Bad timing</h3><p>Perks are announced at sign-up, not at checkout.</p></button>
+              <button class="cause" data-c="2" aria-pressed="false"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>Complexity</h3><p>Terms change monthly. Caps and minimums hide in fine print.</p></button>
+              <button class="cause" data-c="3" aria-pressed="false"><h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>No feedback</h3><p>No running total shows what a membership gave back.</p></button>
+            </div>
+            <div class="card cause-detail" aria-live="polite">
+              <div><div class="label">What it looks like</div><p id="cdLife"></p></div>
+              <div><div class="label" style="color:var(--green-t)">What Vasool does</div><p id="cdFix"></p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3 PERSONA -->
+      <section class="slide s3" id="slide-3" aria-label="Slide 3, persona">
+        <div>
+          <div class="eyebrow">03 · Persona <span class="crit">Definition</span></div>
+          <h2>Priya pays for seven memberships and uses a few of their perks</h2>
+        </div>
+        <div class="sbody">
+          <div class="card persona">
+            <div class="p-head"><div class="avatar">P</div><div><div class="p-name">Priya, 28</div><div class="p-role">Product analyst · Bangalore</div></div></div>
+            <div>
+              <div class="label">Pays for</div>
+              <div class="chips"><span class="chip">2 credit cards</span><span class="chip">Amazon Prime</span><span class="chip">Swiggy One</span><span class="chip">Netflix</span><span class="chip">Gym pass</span><span class="chip">Airline loyalty</span></div>
+            </div>
+            <p class="p-line"><b>Habits:</b> orders food 4–5 times a week, flies home every quarter.</p>
+            <p class="p-quote">"I know my card gives lounge access and dining discounts, but I only remember after I've paid."</p>
+            <p class="p-line"><b>Wants:</b> to feel her memberships are worth it, without reading fine print.</p>
+          </div>
+          <div class="card week">
+            <div class="week-top"><h3>One week in Priya's life</h3><span class="tap-hint">Click a day</span></div>
+            <div class="days" id="days"></div>
+            <div class="event" id="event" aria-live="polite"></div>
+            <div class="week-sum">
+              <div class="sum miss"><span>Left unused this week</span><b>₹2,170</b></div>
+              <div class="sum used"><span>Perks she used</span><b>₹40</b></div>
+            </div>
+            <p class="foot">Illustrative week built from desk research and conversations with peers. Every missed rupee was already paid for.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4 ASSUMPTIONS -->
+      <section class="slide s4" id="slide-4" aria-label="Slide 4, assumptions">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:20px">
+          <div>
+            <div class="eyebrow">04 · Assumptions <span class="crit">Definition</span></div>
+            <h2>Seven assumptions this design depends on</h2>
+          </div>
+          <span class="tap-hint" style="margin-bottom:8px">Click a card to see what breaks if it's wrong</span>
+        </div>
+        <div class="sbody" id="assume"></div>
+      </section>
+
+      <!-- 5 MARKET -->
+      <section class="slide s5" id="slide-5" aria-label="Slide 5, market">
+        <div>
+          <div class="eyebrow">05 · Market gap <span class="crit">Definition</span></div>
+          <h2>Other apps help you cut costs. None help you use what you already pay for.</h2>
+        </div>
+        <div class="sbody">
+          <div class="map-wrap">
+            <div class="map" id="map">
+              <span class="quad" style="left:14px;top:12px">Use · one silo</span>
+              <span class="quad" style="right:14px;top:12px">Use · everything you own</span>
+              <span class="quad" style="left:14px;bottom:12px">Save · generic</span>
+              <span class="quad" style="right:14px;bottom:12px">Cut · personal</span>
+              <span class="ax ax-y">Helps you use benefits →</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-left:24px;width:470px;max-width:calc(100% - 24px)"><span class="ax" style="position:static">Generic or one silo</span><span class="ax" style="position:static">All your memberships →</span></div>
+          </div>
+          <div class="mk-side">
+            <div class="card mk-detail" id="mkDetail" aria-live="polite"></div>
+            <div class="position"><div class="label">Positioning</div><p>Get your money's worth from what you already pay for.</p></div>
+            <div class="diffs">
+              <div class="card diff"><h4>Unified</h4><p>Every card, subscription and loyalty program in one wallet.</p></div>
+              <div class="card diff"><h4>In the moment</h4><p>The perk appears at checkout, when it can still be used.</p></div>
+              <div class="card diff"><h4>Motivating</h4><p>Value recovered is the score, so using perks feels like progress.</p></div>
+            </div>
+            <p class="foot">Competitor descriptions are approximate, based on public information. Click a dot on the map.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6 SOLUTION -->
+      <section class="slide s6" id="slide-6" aria-label="Slide 6, solution">
+        <div>
+          <div class="eyebrow">06 · Solution <span class="crit">Design</span></div>
+          <h2>Four features, one game layer, one rule</h2>
+        </div>
+        <div class="sbody">
+          <div class="col">
+            <div class="col-h"><h3>Features</h3><span class="tap-hint">Click a feature</span></div>
+            <div class="feat-list" id="feats"></div>
+            <div class="card feat-detail" id="featDetail" aria-live="polite"></div>
+          </div>
+          <div class="col">
+            <div class="card" style="padding:8px 20px">
+              <div class="mech">
+                <div class="mech-row"><b>Value Recovered score</b><span>Running ₹ total for the year, like XP</span></div>
+                <div class="mech-row"><b>ROI meter</b><span>Fills toward 100% per membership; "Paid off" at 100%</span></div>
+                <div class="mech-row"><b>Streaks</b><span>Weeks in a row with at least one perk used</span></div>
+                <div class="mech-row"><b>Badges</b><span>Foodie Saver, Lounge Lizard, Prime Maximiser, Zero Waste Month</span></div>
+                <div class="mech-row"><b>Monthly missions</b><span>For example, "Use 3 dining perks this month"</span></div>
+              </div>
+            </div>
+            <div class="card ethic">
+              <div class="ethic-top">
+                <h3>What should the game reward?</h3>
+                <div class="seg" role="group" aria-label="Reward rule">
+                  <button class="bad" data-e="spend" aria-pressed="false">Money spent</button>
+                  <button data-e="value" aria-pressed="true">Value gained</button>
+                </div>
+              </div>
+              <p class="scen">Sunday night. Priya is one step away from finishing her dining mission.</p>
+              <div class="out good" id="ethicOut" aria-live="polite"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7 FLOWS -->
+      <section class="slide s7" id="slide-7" aria-label="Slide 7, user flows">
+        <div>
+          <div class="eyebrow">07 · User flows <span class="crit">Design</span></div>
+          <h2>Three flows. Flow B is where the value is created.</h2>
+        </div>
+        <div class="sbody">
+          <div class="lane">
+            <div class="lane-h"><b>A · Onboarding</b><span>Low fidelity</span></div>
+            <div class="nodes">
+              <div class="node">Welcome</div><span class="arr">›</span>
+              <div class="node">Pick memberships from logos</div><span class="arr">›</span>
+              <div class="node"><b>Reveal:</b> "23 perks, worth up to ₹38,000 a year"</div><span class="arr">›</span>
+              <div class="node">Permissions, each with a reason</div><span class="arr">›</span>
+              <div class="node">Home + starter mission</div>
+            </div>
+          </div>
+          <div class="lane crit">
+            <div class="lane-h"><b>B · Nudge to redemption</b><span>Critical flow · high fidelity</span></div>
+            <div class="nodes">
+              <div class="node ext"><small>CONTEXT</small>Priya opens FoodNow</div><span class="arr">›</span>
+              <button class="node" data-goto="2"><small>SCREEN 2</small>Vasool nudge</button><span class="arr">›</span>
+              <button class="node" data-goto="3"><small>SCREEN 3</small>Perk card: how to apply</button><span class="arr">›</span>
+              <div class="node ext"><small>FOODNOW</small>Completes the order</div><span class="arr">›</span>
+              <button class="node" data-goto="4"><small>SCREEN 4</small>Confirm "Used it"</button><span class="arr">›</span>
+              <button class="node" data-goto="5"><small>SCREEN 5</small>Reward: ₹, ROI, streak</button><span class="arr">›</span>
+              <button class="node" data-goto="6"><small>SCREEN 6</small>Badge unlocked</button>
+            </div>
+            <div class="exits"><span>Ways out, all back to Home (screen 1):</span><span class="chip">Not now</span><span class="chip">Didn't work? Tell us</span><span class="chip">Not this time</span></div>
+          </div>
+          <div class="lane">
+            <div class="lane-h"><b>C · Renewal decision</b><span>Concept only</span></div>
+            <div class="nodes">
+              <div class="node">7 days before renewal</div><span class="arr">›</span>
+              <div class="node">₹ paid vs ₹ recovered</div><span class="arr">›</span>
+              <div class="node">Recommendation: keep, downgrade or cancel</div><span class="arr">›</span>
+              <div class="node">Decision logged, reminder set</div>
+            </div>
+          </div>
+          <div class="flow-note"><span class="tap-hint">Click any Flow B screen to open it in the prototype</span><span>·</span><span><b>Why B?</b> If the nudge-to-redemption loop fails, no dashboard or badge matters.</span></div>
+        </div>
+      </section>
+
+      <!-- 8 PROTOTYPE -->
+      <section class="slide s8" id="slide-8" aria-label="Slide 8, live prototype">
+        <div class="phone-slot" id="phoneSlot">
+          <div class="phone-wrap" id="phoneWrap">
+            <div class="phone" id="phone">
+              <div class="island"></div>
+              <div class="status"><span>9:41</span><span class="sicons">
+                <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+                <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.5c2.3 0 4.4.9 6 2.4l1.2-1.3C13.3 1.8 10.8.7 8 .7S2.7 1.8.8 3.6L2 4.9c1.6-1.5 3.7-2.4 6-2.4zm0 3.6c1.3 0 2.5.5 3.4 1.3l1.2-1.3C11.4 5 9.8 4.3 8 4.3S4.6 5 3.4 6.1l1.2 1.3C5.5 6.6 6.7 6.1 8 6.1zm0 3.4L6.1 9 8 11l1.9-2L8 9.5z"/></svg>
+                <svg width="27" height="13" viewBox="0 0 27 13" fill="none"><rect x=".5" y=".5" width="23" height="12" rx="3.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="18" height="9" rx="2" fill="currentColor"/><rect x="24.5" y="4.5" width="1.6" height="4" rx=".8" fill="currentColor" opacity=".4"/></svg>
+              </span></div>
+
+              <!-- S1 HOME -->
+              <div class="screen on" data-s="1"><div id="homeBody" style="position:absolute;inset:0"></div></div>
+
+              <!-- S2 NUDGE -->
+              <div class="screen" data-s="2">
+                <div class="food">
+                  <div class="food-top"><span class="bk">‹</span><span class="food-logo">FoodNow</span><span class="t">Your cart</span></div>
+                  <div class="rest"><div class="img"></div><div><b>Biryani House</b><span>Koramangala · 30–35 min</span></div></div>
+                  <div class="items">
+                    <div class="item"><div>Chicken Dum Biryani<small>Half · ×1</small></div><span>₹320</span></div>
+                    <div class="item"><div>Mirchi ka Salan<small>×1</small></div><span>₹60</span></div>
+                    <div class="item"><div>Double ka Meetha<small>×1</small></div><span>₹70</span></div>
+                  </div>
+                  <div class="bill"><div><span>Item total</span><span>₹450</span></div><div><span>Delivery</span><span>Free</span></div><div class="tot"><span>To pay</span><span>₹450</span></div></div>
+                  <div class="paybar"><div class="pm">Pay using<b>UPI ▾</b></div><div class="po">Place order · ₹450</div></div>
+                </div>
+                <div class="dim"></div>
+                <div class="notif" role="dialog" aria-label="Vasool notification">
+                  <div class="n-top"><span class="appic">V</span>Vasool · now</div>
+                  <div class="n-title">Pay with HDFC Millennia here</div>
+                  <div class="n-body">20% off on FoodNow with your card. Saves about ₹90 on this ₹450 order.</div>
+                  <div class="gchip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>Completes your dining mission (3 of 3)</div>
+                  <div class="n-btns"><button class="pbtn ghost" data-act="not-now">Not now</button><button class="pbtn navy" data-act="show-me" data-primary>Show me</button></div>
+                </div>
+              </div>
+
+              <!-- S3 PERK CARD -->
+              <div class="screen" data-s="3">
+                <div class="app-scroll" style="padding-bottom:150px">
+                  <div class="nav3"><button class="backbtn" data-act="back" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button><b>Your best perk here</b></div>
+                  <div class="perk">
+                    <div class="perk-top"><span>HDFC Millennia</span><span class="best">BEST MATCH</span></div>
+                    <div class="perk-big">20% off</div>
+                    <div class="perk-sv">Saves ~₹90 today</div>
+                    <div class="perk-on">On FoodNow · Biryani House order of ₹450</div>
+                  </div>
+                  <div class="h3p">How to use it</div>
+                  <div class="psteps">
+                    <div class="pst"><i>1</i><span>At checkout, tap <b>Pay using</b> and choose <b>Credit card</b></span></div>
+                    <div class="pst"><i>2</i><span>Select <b>HDFC Millennia</b></span></div>
+                    <div class="pst"><i>3</i><span>The 20% off applies automatically</span></div>
+                  </div>
+                  <button class="terms-btn" data-act="terms" aria-expanded="false" aria-controls="terms">Terms<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg></button>
+                  <div class="terms" id="terms" hidden>Max ₹100 off · Min order ₹300 · Valid till 30 Nov<br>Checked by Vasool 2 days ago</div>
+                </div>
+                <div class="bcta"><button class="pbtn navy" data-act="got-it" data-primary>Got it, back to my order</button><button class="plink" data-act="didnt-work">Didn't work? Tell us</button></div>
+              </div>
+
+              <!-- S4 CONFIRM -->
+              <div class="screen" data-s="4">
+                <div class="bg-home" id="bgHome"></div>
+                <div class="dim"></div>
+                <div class="mini"><span class="fi">F</span><span><b>FoodNow</b> · Order placed. ₹360 paid with HDFC Millennia.</span></div>
+                <div class="sheet" role="dialog" aria-label="Confirm perk use">
+                  <div class="grab"></div>
+                  <h3>Did you use your perk?</h3>
+                  <p class="sub">HDFC Millennia · 20% off on FoodNow</p>
+                  <div class="save">
+                    <div><label for="saveIn">Estimated saving</label><div class="val">₹<input id="saveIn" type="number" min="0" max="100" value="90" inputmode="numeric"></div></div>
+                    <span class="ed"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>Edit</span>
+                  </div>
+                  <p class="save-help">Change it if the app showed a different discount. Max ₹100 for this perk.</p>
+                  <div class="gnote"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>Confirming finishes your dining mission</div>
+                  <button class="pbtn navy" data-act="used" data-primary>Yes, I used it</button>
+                  <button class="plink" data-act="not-this">Not this time</button>
+                </div>
+              </div>
+
+              <!-- S5 REWARD -->
+              <div class="screen rew" data-s="5">
+                <canvas class="confetti" id="confetti" width="780" height="1688"></canvas>
+                <div class="rew-c">
+                  <div class="chk"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+                  <div class="rew-plus">+₹<span id="rPlus">90</span> recovered</div>
+                  <div class="rew-l">Value recovered this year</div>
+                  <div class="rew-n">₹<span id="rTotal">4,340</span></div>
+                  <div class="rr">
+                    <div class="rr-top"><span>HDFC Millennia ROI</span><span><span class="was">72%</span> → <b id="rRoi">81%</b></span></div>
+                    <div class="pbar on-dark"><i id="rBar" style="width:81%"></i></div>
+                  </div>
+                  <div class="rr2">
+                    <div class="stat"><small>Streak</small><b id="rStreak">7 weeks</b></div>
+                    <div class="stat"><small>Dining mission</small><b>3 of 3</b></div>
+                  </div>
+                </div>
+                <div class="bcta"><button class="pbtn green" data-act="claim" data-primary>Claim your reward</button></div>
+              </div>
+
+              <!-- S6 BADGE -->
+              <div class="screen" data-s="6">
+                <div class="app-scroll s6p" style="padding-bottom:170px">
+                  <svg class="badge" viewBox="0 0 170 186" aria-hidden="true">
+                    <defs><linearGradient id="bg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22C55E"/><stop offset="1" stop-color="#15803D"/></linearGradient></defs>
+                    <path d="M85 4l74 42v94l-74 42-74-42V46z" fill="#0F1B3D"/>
+                    <path d="M85 20l60 34v78l-60 34-60-34V54z" fill="url(#bg1)"/>
+                    <g fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M66 62v24a8 8 0 0 0 8 8v30M58 62v18M74 62v18"/>
+                      <path d="M106 124V62c-9 4-14 16-14 30h14"/>
+                    </g>
+                  </svg>
+                  <div class="b-eye">Badge unlocked</div>
+                  <div class="b-name">Foodie Saver</div>
+                  <p class="b-txt">You used 3 dining perks this month and saved ₹<span id="bSaved">240</span> on food.</p>
+                  <div class="next">
+                    <div class="pi"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F1B3D" stroke-width="2" stroke-linejoin="round"><path d="M10.5 13.5L3 11l1.5-1.5 8 1 4-4.5c1-1 2.6-1.3 3.2-.7.6.6.3 2.2-.7 3.2l-4.5 4 1 8L14 22l-2.5-7.5L8 18v3l-1.5 1L5 18.5 1.5 17 2.5 15.5h3z"/></svg></div>
+                    <div><small>Next mission</small><b>Use a lounge perk on your next trip</b><span>Worth ~₹1,500 · unlocks Lounge Lizard</span></div>
+                  </div>
+                </div>
+                <div class="bcta"><button class="pbtn navy" data-act="share">Share badge</button><button class="pbtn outline" data-act="home" data-primary>Back to home</button></div>
+              </div>
+
+              <div class="ptoast" id="ptoast" role="status"></div>
+              <div class="homebar"></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div>
+            <div class="eyebrow">08 · Prototype <span class="crit">Delivery</span></div>
+            <h2>Try it: from perk nudge to reward</h2>
+          </div>
+          <div class="steps" id="steps"></div>
+          <div class="card why">
+            <div class="label" id="rScr">Screen 1 of 6</div>
+            <h3 id="rName">Home dashboard</h3>
+            <p id="rWhy"></p>
+            <div class="try" id="rTry"></div>
+          </div>
+          <div class="ctl">
+            <button class="btn sec" data-ctl="prev">‹ Back</button>
+            <button class="btn pri" data-ctl="main">Priya opens FoodNow ›</button>
+            <button class="btn txt" data-ctl="reset">Reset</button>
+          </div>
+          <a class="small-link" href="#prototype">Open the prototype on its own, full screen ↗</a>
+        </div>
+      </section>
+
+      <!-- 9 OVERVIEW -->
+      <section class="slide s9" id="slide-9" aria-label="Slide 9, all screens">
+        <div>
+          <div class="eyebrow">09 · High-fidelity screens <span class="crit">Delivery</span></div>
+          <h2>Six screens, one loop, and the decisions behind them</h2>
+        </div>
+        <div class="thumbs" id="thumbs"></div>
+        <div class="decisions">
+          <div class="card dec"><h4>Nudge at checkout</h4><p>The perk shows up while the cart is open, the only moment it can still be used.</p></div>
+          <div class="card dec"><h4>One best perk, not a list</h4><p>The app picks the single best match and states its ₹ value. No comparing.</p></div>
+          <div class="card dec"><h4>"Not now" is easy</h4><p>Saying no is one tap. Rare, skippable nudges keep trust (assumption 4).</p></div>
+          <div class="card dec"><h4>Ask instead of tracking</h4><p>No bank access, so the user confirms. The saving is editable, so it stays honest.</p></div>
+          <div class="card dec"><h4>Motion only for rewards</h4><p>The app is calm everywhere else. Confetti and counters appear only when value is gained.</p></div>
+        </div>
+      </section>
+
+      <!-- 10 METRICS -->
+      <section class="slide s10" id="slide-10" aria-label="Slide 10, metrics and business model">
+        <div>
+          <div class="eyebrow">10 · Measuring success <span class="crit">Impact</span></div>
+          <h2>How we'll know it works, and how it earns</h2>
+        </div>
+        <div class="sbody">
+          <div class="right10">
+            <div class="ns"><div><div class="label">North Star metric</div><p>₹ value recovered per active user per month</p></div><span class="why-ns">It only rises when people actually use perks, so it can't be gamed by sending more nudges.</span></div>
+            <div class="targets">
+              <div class="card tg"><b>25%+</b><p>Nudge tap rate</p></div>
+              <div class="card tg"><b>4+</b><p>Perks used per user per month</p></div>
+              <div class="card tg"><b>40%+</b><p>Week-4 retention</p></div>
+              <div class="card tg"><b>&lt;10%</b><p>"Didn't work" rate</p></div>
+            </div>
+            <div class="card list-card">
+              <div class="label">Business model</div>
+              <div class="list">
+                <div class="li"><span class="n">FREE</span><span><b>Core app.</b> Wallet, nudges and the game.</span></div>
+                <div class="li"><span class="n">B2B2C</span><span><b>Partner revenue.</b> Card issuers and brands pay for perks used.</span></div>
+                <div class="li"><span class="n">₹49</span><span><b>Vasool Pro, per month.</b> Family sharing, Renewal Advisor, card picks.</span></div>
+                <div class="li"><span class="n">LATER</span><span><b>Employee benefits</b> for companies.</span></div>
+              </div>
+            </div>
+            <div class="card list-card">
+              <div class="label">Next steps</div>
+              <div class="list">
+                <div class="li"><span class="n">01</span><span>Test nudge timing with 5–8 users.</span></div>
+                <div class="li"><span class="n">02</span><span>Check whether the onboarding "₹38,000" reveal is believable.</span></div>
+                <div class="li"><span class="n">03</span><span>Find how many nudges a day feel helpful, not annoying.</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div id="notes" hidden>
+  <span class="label" id="notesNum">Slide 1</span>
+  <p id="notesText"></p>
+  <button id="notesClose">Close</button>
+</div>
+
+<div id="protoView" hidden>
+  <div class="pv-top"><a class="small-link" href="#8">‹ Back to the deck</a><span class="foot">Vasool · Flow B prototype</span></div>
+  <div id="pvSlot"></div>
+  <div class="ctl">
+    <button class="btn sec" data-ctl="prev">‹ Back</button>
+    <button class="btn pri" data-ctl="main">Priya opens FoodNow ›</button>
+    <button class="btn txt" data-ctl="reset">Reset</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const fmt = n => Number(n).toLocaleString('en-IN');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const narrow = matchMedia('(max-width: 860px)');
+  const slides = $$('.slide');
+  let cur = 0, suppressHash = false;
+
+  const SECS = ['Title','Definition','Definition','Definition','Definition','Design','Design','Delivery','Delivery','Impact'];
+  const NOTES = [
+    "I drew Membership, Benefit and Numberless. Together they describe a common problem: memberships come with countless benefits that go unused. Vasool comes from 'paisa vasool', getting full value for money. Click 'Run the draw again' if they ask how I started.",
+    "The problem is not a lack of perks. Perks are fragmented and appear at the wrong moment. Click through the four causes.",
+    "Priya stands for the primary user. Walk through her week: ₹2,170 left unused, all of it already paid for. Friday's lounge visit is the biggest single loss.",
+    "These are the assumptions the design stands on. Flip #4 first: nudge trust is the riskiest one, so it is the first thing I would test.",
+    "Trackers help you cancel, CRED rewards you with its own points, bank apps cover one card. Nobody helps you use what you already own, at the moment you can use it. Click Vasool's dot last.",
+    "Each feature maps to one of the four causes. Then use the toggle: rewarding money spent would push Priya to overspend. Vasool only rewards value gained. That is the key design decision.",
+    "Three flows. B is the critical one because that is where value is created. Click any Flow B screen to jump into the prototype.",
+    "Run the flow live. On screen 3, mention the 'Didn't work' path. On screen 4, change the saving to show the numbers carry through to screen 5.",
+    "All six screens together, and the five decisions behind them.",
+    "The North Star is ₹ recovered per active user per month. It only rises when people actually save. The four targets explain why it moves. Vasool is free for users and earns when partners' perks get used. Next step: test nudge timing with 5–8 users."
+  ];
+
+  /* ---------------- deck navigation ---------------- */
+  function fit() {
+    if (narrow.matches) { $('#stage').style.transform = ''; return; }
+    const v = $('#viewport').getBoundingClientRect();
+    const s = Math.min((v.width - 32) / 1280, (v.height - 32) / 720);
+    $('#stage').style.transform = `translate(-50%,-50%) scale(${Math.max(s, .2)})`;
+  }
+  function go(i, source) {
+    i = Math.max(0, Math.min(slides.length - 1, i));
+    cur = i;
+    slides.forEach((s, k) => s.classList.toggle('active', k === i));
+    $('#tbCount').textContent = String(i + 1).padStart(2, '0') + ' / 10';
+    $('#tbProg').style.width = ((i + 1) * 10) + '%';
+    $('#tbSec').textContent = SECS[i];
+    $('#notesNum').textContent = 'Slide ' + (i + 1);
+    $('#notesText').textContent = NOTES[i];
+    if (narrow.matches && source !== 'init') slides[i].scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+    if (source !== 'hash' && source !== 'init') {
+      const h = '#' + (i + 1);
+      if (location.hash !== h) { suppressHash = true; location.hash = h; }
+    }
+    if (i === 0 && source !== 'init') spin(false);
+  }
+  $('#tbPrev').onclick = () => go(cur - 1);
+  $('#tbNext').onclick = () => go(cur + 1);
+  function toggleNotes(force) {
+    const n = $('#notes');
+    const show = force !== undefined ? force : n.hidden;
+    n.hidden = !show;
+    $('#tbNotes').setAttribute('aria-pressed', String(show));
+  }
+  $('#tbNotes').onclick = () => toggleNotes();
+  $('#notesClose').onclick = () => toggleNotes(false);
+  document.addEventListener('keydown', e => {
+    if (document.body.classList.contains('proto') || narrow.matches) return;
+    if (e.target.closest('input, textarea, select')) return;
+    const k = e.key;
+    if (k === ' ' && e.target.closest('button, a')) return;
+    if (k === 'ArrowRight' || k === 'PageDown' || k === ' ') { e.preventDefault(); go(cur + 1); }
+    else if (k === 'ArrowLeft' || k === 'PageUp') { e.preventDefault(); go(cur - 1); }
+    else if (k === 'Home') go(0);
+    else if (k === 'End') go(slides.length - 1);
+    else if (k === 'n' || k === 'N') toggleNotes();
+  });
+  addEventListener('resize', fit);
+  narrow.addEventListener?.('change', () => { fit(); });
+
+  /* ---------------- 1: the draw ---------------- */
+  const LISTS = [
+    ['Lantern','Harbor','Orchard','Ticket','Compass','Ledger','Window','Membership'],
+    ['Gather','Wander','Borrow','Signal','Repair','Balance','Benefit'],
+    ['Velvet','Brisk','Hollow','Patient','Amber','Quiet','Numberless']
+  ];
+  const FINAL = ['Membership','Benefit','Numberless'];
+  let spun = false, spinning = false;
+  function spin(force) {
+    if (spinning || (!force && spun)) return;
+    spun = true;
+    const reels = $$('.reel .w'), brief = $('#brief');
+    brief.classList.remove('lit');
+    if (reduce) { reels.forEach((r, k) => { r.textContent = FINAL[k]; r.classList.add('done'); }); return; }
+    spinning = true;
+    reels.forEach(r => r.classList.remove('done'));
+    const stops = [900, 1350, 1800], t0 = performance.now();
+    const id = setInterval(() => {
+      const el = performance.now() - t0;
+      reels.forEach((r, k) => {
+        if (r.classList.contains('done')) return;
+        if (el >= stops[k]) { r.textContent = FINAL[k]; r.classList.add('done'); }
+        else r.textContent = LISTS[k][Math.floor(Math.random() * LISTS[k].length)];
+      });
+      if (el >= stops[2]) { clearInterval(id); spinning = false; void brief.offsetWidth; brief.classList.add('lit'); }
+    }, 70);
+  }
+  $('#respin').onclick = () => spin(true);
+
+  /* ---------------- 2: causes ---------------- */
+  const CAUSES = [
+    ["Lounge access is in a card's PDF, the dining discount is in the bank app, free delivery is in another app. Seven memberships, seven places to look.", "One Membership Wallet. People pick their cards and subscriptions from a list once, and every perk is in one place."],
+    ["People remember the 20% food-app discount the morning after they paid with UPI.", "Perk Radar notices a food app is open and shows the perk while the cart is still open."],
+    ["'Max ₹100 off, min order ₹300, valid till 30 Nov.' Nobody can keep that in their head for 23 perks.", "One best perk per moment, three plain steps, and the terms folded one tap away."],
+    ["Few people can say whether a card fee paid for itself this year, so they renew everything without thinking.", "A running ₹ total and an ROI meter for every membership, plus a renewal check-in."]
+  ];
+  function setCause(i) {
+    $$('#causes .cause').forEach((b, k) => b.setAttribute('aria-pressed', String(k === i)));
+    $('#cdLife').textContent = CAUSES[i][0];
+    $('#cdFix').textContent = CAUSES[i][1];
+  }
+  $('#causes').addEventListener('click', e => { const b = e.target.closest('.cause'); if (b) setCause(+b.dataset.c); });
+  setCause(0);
+
+  /* ---------------- 3: Priya's week ---------------- */
+  const DAYS = [
+    { d:'Mon', time:'MON · 8:40 PM', ev:'Orders biryani on a food app, ₹450', perk:'HDFC Millennia: 20% off on food apps', res:'Paid with UPI. Remembered the discount the next morning.', st:'miss', amt:'₹90 missed' },
+    { d:'Tue', time:'TUE · 7:00 AM', ev:'Skips the gym again', perk:'Gym pass, paid for the year', res:'Third skipped week. She has used about 20% of what the pass costs, and no one has told her.', st:'waste', amt:'20% used' },
+    { d:'Wed', time:'WED · 1:15 PM', ev:'Orders lunch at her desk', perk:'Swiggy One: free delivery', res:'Applied automatically. The one perk she never has to remember.', st:'used', amt:'₹40 saved' },
+    { d:'Thu', time:'THU · 9:30 PM', ev:'Books two movie tickets', perk:'Second credit card: buy one, get one free', res:"She didn't know her second card had this offer.", st:'miss', amt:'₹250 missed' },
+    { d:'Fri', time:'FRI · 6:10 PM', ev:'Two hours early at the airport, flying home', perk:'HDFC card: free airport lounge visit', res:'Bought a ₹600 sandwich and coffee at the gate. A lounge visit is worth about ₹1,500.', st:'miss', amt:'₹1,500 missed' },
+    { d:'Sat', time:'SAT · 9:00 PM', ev:'Dinner with friends, ₹2,200 bill', perk:'Card dining program: 15% off at partner restaurants', res:'The restaurant was a partner. She found out a week later.', st:'miss', amt:'₹330 missed' },
+    { d:'Sun', time:'SUN · 11:00 AM', ev:'Gets a renewal email for a membership', perk:'None. This is a decision moment.', res:'She has no idea if it paid for itself, so it renews by default.', st:'unknown', amt:'Renews blind' }
+  ];
+  const dayWrap = $('#days');
+  dayWrap.innerHTML = DAYS.map((d, k) => `<button class="day" data-d="${k}" aria-pressed="false">${d.d}<i class="${d.st}"></i></button>`).join('');
+  function setDay(i) {
+    $$('#days .day').forEach((b, k) => b.setAttribute('aria-pressed', String(k === i)));
+    const d = DAYS[i];
+    $('#event').innerHTML = `<div class="ev-time">${d.time}</div><div class="ev-title">${d.ev}</div><div class="ev-amt ${d.st}">${d.amt}</div>
+      <div class="ev-perk"><span class="label">Perk she had</span>${d.perk}</div><div class="ev-res">${d.res}</div>`;
+  }
+  dayWrap.addEventListener('click', e => { const b = e.target.closest('.day'); if (b) setDay(+b.dataset.d); });
+  setDay(4);
+
+  /* ---------------- 4: assumptions ---------------- */
+  const ASSUME = [
+    ['Data', 'Benefit data can be collected from public pages and partner APIs, and kept current by a small ops team.', 'Stale perks lead to wrong nudges, and trust falls quickly.', 'Track 50 perks across 5 cards for a month and measure how often terms change.'],
+    ['Privacy', 'No card numbers or bank logins. People pick their cards and memberships from a list.', 'Without transaction data, "Used it" is self-reported and may be inflated.', 'In a pilot, compare self-reported confirms with optional SMS receipts.'],
+    ['Context', 'The phone tells Vasool which app is open and where the user is, with permission.', 'If people refuse the permission, Perk Radar goes blind.', 'Test the permission screen with and without a stated reason, and measure the grant rate.'],
+    ['Trust', 'People trust nudges that are rare (1–2 a day at most), accurate, and show a clear ₹ value.', 'Too many nudges and people mute the app. The whole product stops working.', 'A/B test 1 vs 3 nudges a day. Track mute rate and tap rate.', true],
+    ['Value', '"Value recovered" is estimated from the stated discount or market price (a lounge visit ≈ ₹1,500).', 'Inflated numbers feel fake, and the game loses meaning.', 'Let users edit the saving (screen 4) and track how often and how much they change it.'],
+    ['Market', 'Mobile-first and India-first: urban professionals with multiple memberships.', 'Perk ecosystems differ by city and income, so the hook may be smaller.', 'Launch with the top 10 Indian cards and 5 subscriptions, then measure perks found per user.'],
+    ['Research', 'Research is secondary (desk research and conversations with peers) because of the time limit.', 'The pain may be smaller, or different, than assumed.', 'Interview 5–8 target users before building anything beyond this prototype.']
+  ];
+  $('#assume').innerHTML = ASSUME.map((a, k) => `
+    <button class="flip" aria-pressed="false" aria-label="Assumption ${k + 1}: ${a[0]}. Click to flip.">
+      <div class="flip-in">
+        <div class="face front">
+          <div class="f-top"><span class="f-tag ${a[4] ? 'risk' : ''}">${a[0]}${a[4] ? ' · riskiest' : ''}</span><span class="f-num">#${k + 1}</span></div>
+          <p>${a[1]}</p>
+          <span class="f-flip">↻ What if it's wrong?</span>
+        </div>
+        <div class="face back">
+          <span class="label w">If it's wrong</span><p>${a[2]}</p>
+          <span class="label" style="margin-top:6px">How I'd test it</span><p>${a[3]}</p>
+        </div>
+      </div>
+    </button>`).join('') + `
+    <div class="a-sum">
+      <p><b>Riskiest: #4, nudge trust.</b> If people mute Vasool, nothing else works. It's the first thing I would test.</p>
+      <button class="btn-line" id="flipAll">↻ Flip all cards</button>
+    </div>`;
+  $('#assume').addEventListener('click', e => {
+    if (e.target.closest('#flipAll')) {
+      const cards = $$('#assume .flip');
+      const anyFront = cards.some(c => c.getAttribute('aria-pressed') === 'false');
+      cards.forEach(c => c.setAttribute('aria-pressed', String(anyFront)));
+      return;
+    }
+    const f = e.target.closest('.flip');
+    if (f) f.setAttribute('aria-pressed', String(f.getAttribute('aria-pressed') !== 'true'));
+  });
+
+  /* ---------------- 5: market map ---------------- */
+  const MKT = [
+    { name:'Subscription trackers', eg:'e.g. Rocket Money', x:74, y:16, side:'l', does:'Find and cancel subscriptions to cut costs.', gap:"They help you cut what you pay for. They don't help you use what you keep." },
+    { name:'Bill-payment rewards', eg:'e.g. CRED', x:50, y:36, side:'r', does:'Pay card bills and earn the platform’s own rewards.', gap:'Rewards come from the platform, not from the memberships you already own.' },
+    { name:'Card issuer apps', eg:'Each bank’s own app', x:24, y:66, side:'r', does:'List offers for that one card.', gap:'One card per app. Each app is one more place to check.' },
+    { name:'Coupon & cashback sites', eg:'Various', x:20, y:28, side:'r', does:'Show deals that anyone can use.', gap:"Generic, not personal. They don't know what you already pay for." },
+    { name:'Vasool', eg:'This proposal', x:82, y:84, side:'l', me:true, does:'All your memberships in one place, with the best perk shown when you can use it.', gap:'Unified, in the moment, and motivating.' }
+  ];
+  const map = $('#map');
+  MKT.forEach((m, k) => {
+    const b = document.createElement('button');
+    b.className = 'dot ' + m.side + (m.me ? ' me' : '');
+    b.style.left = m.x + '%'; b.style.bottom = m.y + '%';
+    b.dataset.m = k; b.setAttribute('aria-pressed', 'false');
+    b.innerHTML = `<i></i><span>${m.name}</span>`;
+    map.appendChild(b);
+  });
+  function setMkt(i) {
+    $$('#map .dot').forEach((b, k) => b.setAttribute('aria-pressed', String(k === i)));
+    const m = MKT[i];
+    $('#mkDetail').innerHTML = `<h3>${m.name}</h3><div class="eg">${m.eg}</div>
+      <div class="mk-row"><span class="label">What it does</span><p>${m.does}</p></div>
+      <div class="mk-row gap"><span class="label" style="color:${m.me ? 'var(--green-t)' : 'var(--amber-t)'}">${m.me ? 'Difference' : 'The gap'}</span><p>${m.gap}</p></div>`;
+  }
+  map.addEventListener('click', e => { const b = e.target.closest('.dot'); if (b) setMkt(+b.dataset.m); });
+  setMkt(0);
+
+  /* ---------------- 6: features & ethics ---------------- */
+  const ICON = {
+    wallet:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M3 10h18M16 15h2"/><path d="M6 6l9-3 1 3"/></svg>',
+    radar:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>',
+    dash:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+    renew:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4"/></svg>'
+  };
+  const FEATS = [
+    { n:'Membership Wallet', ic:'wallet', d:'Add cards, subscriptions and loyalty programs from a searchable list of logos in under 2 minutes. No card numbers, no bank logins.', solves:'Fragmentation', where:'Flow A · onboarding' },
+    { n:'Perk Radar', ic:'radar', d:'Notices when a perk applies, such as opening a food app or arriving at the airport, and shows the single best perk with its ₹ value.', solves:'Bad timing · Complexity', where:'Screens 2–3 in the prototype' },
+    { n:'Value Dashboard', ic:'dash', d:'Shows ₹ paid vs ₹ recovered for every membership, and one running total for the year.', solves:'No feedback', where:'Screen 1 in the prototype' },
+    { n:'Renewal Advisor', ic:'renew', d:'7 days before a renewal, recommends keep, downgrade or cancel, based on what was actually used.', solves:'No feedback', where:'Flow C · concept' }
+  ];
+  $('#feats').innerHTML = FEATS.map((f, k) => `<button class="feat" data-f="${k}" aria-pressed="false"><span class="ic">${ICON[f.ic]}</span><b>${f.n}</b></button>`).join('');
+  function setFeat(i) {
+    $$('#feats .feat').forEach((b, k) => b.setAttribute('aria-pressed', String(k === i)));
+    const f = FEATS[i];
+    $('#featDetail').innerHTML = `<div class="label">${f.n}</div><p>${f.d}</p>
+      <div class="fd-meta"><span class="chip solves">Solves: ${f.solves}</span><span class="chip where">${f.where}</span></div>`;
+  }
+  $('#feats').addEventListener('click', e => { const b = e.target.closest('.feat'); if (b) setFeat(+b.dataset.f); });
+  setFeat(1);
+
+  const ETHIC = {
+    spend: { cls:'bad', mission:'Spend ₹2,000 on dining this month', act:'She orders a ₹600 dinner she didn’t want, just to finish the mission.', verdict:'The game wins and Priya loses ₹600. Most loyalty programs reward this.' },
+    value: { cls:'good', mission:'Use 3 dining perks this month', act:'Only perks on orders she was already making count. Saving ₹90 on a planned meal finishes it.', verdict:'Vasool’s rule: rewards follow value gained, never money spent.' }
+  };
+  function setEthic(k) {
+    $$('.seg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.e === k)));
+    const e = ETHIC[k], out = $('#ethicOut');
+    out.className = 'out ' + e.cls;
+    out.innerHTML = `<span class="k">Mission</span><span>${e.mission}</span><span class="k">Priya</span><span>${e.act}</span><span class="verdict">${e.verdict}</span>`;
+  }
+  $('.seg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setEthic(b.dataset.e); });
+  setEthic('value');
+
+  /* ---------------- 8: phone prototype ---------------- */
+  const S = { saving: 90, done: false };
+  let scr = 1, rewardRun = 0, toastT;
+  const NAMES = ['Home dashboard','Perk nudge','Perk card','Confirm use','Reward moment','Badge unlocked'];
+  const WHY = [
+    'The ₹ total leads the screen because it is the score, like XP. The gym pass sits at 20% in amber with a "Review" label. Being honest about a weak membership builds trust in the strong ones.',
+    'The nudge arrives at checkout, the one moment the perk can still be used. It shows one perk, a ₹ value, and how it moves her mission. "Not now" gets the same weight as "Show me".',
+    'Three steps written in the food app’s own words: what to tap, what to pick, what happens. Terms are folded but one tap away. "Didn’t work? Tell us" catches stale data before it costs trust.',
+    'Vasool has no bank access, so it asks. The saving is pre-filled and editable, so the number stays honest. "Not this time" counts nothing and costs nothing.',
+    'This is the only screen with playful motion. Every number moves from where it was: ₹4,250 to ₹4,340, ROI 72% to 81%, streak 6 to 7 weeks.',
+    'The badge is earned by perks used, never money spent. The next mission points to a bigger perk (a lounge visit, about ₹1,500), so the loop continues on her next trip.'
+  ];
+  const TRY = [
+    '<b>Try:</b> press "Priya opens FoodNow" to start the flow.',
+    '<b>Try:</b> tap "Show me". "Not now" returns to home with no penalty.',
+    '<b>Try:</b> open Terms, or tap "Didn’t work? Tell us" to see the escape path.',
+    '<b>Try:</b> change the saving to ₹80, then confirm. The next screen uses your number.',
+    '<b>Watch:</b> the counter and the ROI bar animate from the old values.',
+    '<b>Try:</b> "Back to home" shows the updated total, ROI and streak.'
+  ];
+  const MAIN = ['Priya opens FoodNow','Show me','Got it, back to my order','Yes, I used it','Claim your reward','Back to home'];
+  const MAIN_ACT = ['open-food','show-me','got-it','used','claim','home'];
+  const IC = {
+    flame:'<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3.5-1.6 5-1.6 8 0 1.3.9 2.3 2.1 2.3 1.4 0 2.2-1.2 2-3 2 1.7 3.5 4 3.5 6.6C18 19.4 15.3 22 12 22s-6-2.6-6-6.1C6 10.6 11 8.3 12 2z"/></svg>',
+    home:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+    tag:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="8" cy="8" r="1.6" fill="currentColor"/></svg>',
+    target:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>',
+    user:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>'
+  };
+  function homeHTML(st) {
+    const total = 4250 + (st.done ? st.saving : 0);
+    const pct = Math.round(total / 11800 * 100);
+    const hdfc = Math.min(100, 72 + (st.done ? Math.round(st.saving / 10) : 0));
+    const streak = st.done ? 7 : 6;
+    const m = st.done
+      ? { t:'Use a lounge perk on your next trip', p:0, of:1, r:'Lounge Lizard badge' }
+      : { t:'Use 3 dining perks this month', p:2, of:3, r:'Foodie Saver badge' };
+    const rows = [
+      { n:'HDFC Millennia', s:'Card', t:'HM', c:'#2B4C9B', roi:hdfc },
+      { n:'Amazon Prime', s:'Subscription', t:'AP', c:'#0E7490', roi:100, paid:true },
+      { n:'Swiggy One', s:'Food', t:'S1', c:'#C2410C', roi:45 },
+      { n:'Cult gym pass', s:'Fitness', t:'CG', c:'#475569', roi:20, warn:true }
+    ].map(r => `<div class="mrow"><div class="tile" style="background:${r.c}">${r.t}</div>
+        <div><div class="m-name">${r.n}<span class="m-sub">${r.s}</span></div><div class="pbar ${r.warn ? 'amber' : ''}"><i style="width:${r.roi}%"></i></div></div>
+        <div class="m-roi">${r.paid ? '<span class="pill-g">Paid off</span>' : r.warn ? `<span class="roi-a">${r.roi}%</span><span class="review">Review</span>` : r.roi + '%'}</div></div>`).join('');
+    const dots = Array.from({ length: m.of }, (_, k) => `<i class="${k < m.p ? 'f' : ''}"></i>`).join('');
+    return `<div class="app-scroll">
+      <div class="h-top"><div><div class="h-hi">Good evening</div><div class="h-name">Priya</div></div><div class="streak">${IC.flame}${streak}-week streak</div></div>
+      <div class="hero"><div class="hero-l">Value recovered this year</div><div class="hero-n">₹${fmt(total)}</div>
+        <div class="pbar on-dark"><i style="width:${pct}%"></i></div><div class="hero-s">${pct}% of ₹11,800 paid · 23 perks tracked</div></div>
+      <div class="mission"><div class="m-top"><span class="m-eye">${st.done ? 'Next mission' : 'Monthly mission'}</span><span class="m-count">${m.p} of ${m.of}</span></div>
+        <div class="m-title">${m.t}</div><div class="m-dots">${dots}</div><div class="m-rew">Reward: ${m.r}</div></div>
+      <div class="sec-h"><span>Your memberships · ROI</span><span>See all</span></div>
+      <div class="mlist">${rows}</div>
+    </div>
+    <nav class="tabbar"><span class="tab on">${IC.home}Home</span><span class="tab">${IC.tag}Perks</span><span class="tab">${IC.target}Missions</span><span class="tab">${IC.user}Profile</span></nav>`;
+  }
+  function renderHome() { $('#homeBody').innerHTML = homeHTML(S); }
+
+  function toast(msg) {
+    const t = $('#ptoast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2400);
+  }
+
+  function confetti() {
+    const cv = $('#confetti'); if (!cv) return;
+    const ctx = cv.getContext('2d'); const W = 390, H = 844;
+    ctx.setTransform(2, 0, 0, 2, 0, 0);
+    const cols = ['#22C55E', '#F59E0B', '#FFFFFF', '#7DD3FC', '#16A34A'];
+    const P = Array.from({ length: 110 }, () => ({
+      x: Math.random() * W, y: -20 - Math.random() * 300, vx: (Math.random() - .5) * 2.2, vy: 2.5 + Math.random() * 3.5,
+      r: Math.random() * Math.PI, vr: (Math.random() - .5) * .25, w: 6 + Math.random() * 6, h: 4 + Math.random() * 6, c: cols[Math.floor(Math.random() * cols.length)]
+    }));
+    const run = rewardRun, t0 = performance.now();
+    (function frame(t) {
+      if (run !== rewardRun) { ctx.clearRect(0, 0, W, H); return; }
+      ctx.clearRect(0, 0, W, H);
+      const el = t - t0;
+      ctx.globalAlpha = el > 2400 ? Math.max(0, 1 - (el - 2400) / 600) : 1;
+      P.forEach(p => {
+        p.x += p.vx; p.y += p.vy; p.vy += .03; p.r += p.vr;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore();
+      });
+      if (el < 3000) requestAnimationFrame(frame); else ctx.clearRect(0, 0, W, H);
+    })(t0);
+  }
+
+  function runReward() {
+    rewardRun++;
+    const run = rewardRun, s = S.saving, to = 4250 + s, roiTo = Math.min(100, 72 + Math.round(s / 10));
+    $('#rPlus').textContent = fmt(s);
+    $('#rRoi').textContent = roiTo + '%';
+    const bar = $('#rBar'), tot = $('#rTotal'), stk = $('#rStreak');
+    if (reduce) { tot.textContent = fmt(to); bar.style.width = roiTo + '%'; stk.textContent = '7 weeks'; return; }
+    bar.style.transition = 'none'; bar.style.width = '72%';
+    tot.textContent = '4,250'; stk.textContent = '6 weeks'; stk.classList.remove('pop');
+    void bar.offsetWidth;
+    bar.style.transition = 'width 1.3s cubic-bezier(.2,.8,.2,1) .35s';
+    bar.style.width = roiTo + '%';
+    const t0 = performance.now();
+    (function step(t) {
+      if (run !== rewardRun) return;
+      const p = Math.min(1, Math.max(0, (t - t0 - 350) / 1300));
+      const e = 1 - Math.pow(1 - p, 3);
+      tot.textContent = fmt(Math.round(4250 + s * e));
+      if (p < 1) requestAnimationFrame(step);
+    })(t0);
+    setTimeout(() => { if (run !== rewardRun) return; stk.textContent = '7 weeks'; void stk.offsetWidth; stk.classList.add('pop'); }, 1400);
+    confetti();
+  }
+
+  function show(n) {
+    scr = n;
+    $$('#phone .screen').forEach(s => s.classList.toggle('on', +s.dataset.s === n));
+    $('#phone').classList.toggle('dark-status', n === 5);
+    if (n !== 5) rewardRun++;
+    if (n === 4) { $('#bgHome').innerHTML = homeHTML(S); $('#saveIn').value = S.saving; }
+    if (n === 5) runReward();
+    if (n === 6) $('#bSaved').textContent = fmt(150 + S.saving);
+    if (n === 3) { $('#terms').hidden = true; $('#phone [data-act="terms"]').setAttribute('aria-expanded', 'false'); }
+    $$('#phone .app-scroll').forEach(e => { e.scrollTop = 0; });
+    $$('#phone .pulse').forEach(e => e.classList.remove('pulse'));
+    const p = $(`#phone .screen[data-s="${n}"] [data-primary]`);
+    if (p) p.classList.add('pulse');
+    $('#rScr').textContent = `Screen ${n} of 6`;
+    $('#rName').textContent = NAMES[n - 1];
+    $('#rWhy').textContent = WHY[n - 1];
+    $('#rTry').innerHTML = TRY[n - 1];
+    $$('#steps .step').forEach((b, k) => b.setAttribute('aria-current', String(k + 1 === n)));
+    $$('[data-ctl="main"]').forEach(b => { b.textContent = MAIN[n - 1] + ' ›'; b.classList.toggle('pulse-ctl', n === 1); });
+    $$('[data-ctl="prev"]').forEach(b => { b.disabled = n === 1; });
+  }
+  function resetDemo() {
+    S.saving = 90; S.done = false; $('#saveIn').value = 90;
+    renderHome(); show(1);
+  }
+  const ACT = {
+    'open-food': () => { if (S.done) { S.done = false; S.saving = 90; renderHome(); } show(2); },
+    'not-now': () => { show(1); toast('Okay. No more nudges for this order.'); },
+    'show-me': () => show(3),
+    'back': () => show(2),
+    'terms': el => { const t = $('#terms'); const open = t.hidden; t.hidden = !open; el.setAttribute('aria-expanded', String(open)); },
+    'got-it': () => show(4),
+    'didnt-work': () => { show(1); toast("Thanks. We'll check this perk before showing it again."); },
+    'used': () => { let v = parseInt($('#saveIn').value, 10); if (isNaN(v)) v = 90; v = Math.max(0, Math.min(100, v)); $('#saveIn').value = v; S.saving = v; show(5); },
+    'not-this': () => { show(1); toast('No problem. Nothing was counted.'); },
+    'claim': () => show(6),
+    'share': () => toast("Your phone's share sheet opens here."),
+    'home': () => { S.done = true; renderHome(); show(1); }
+  };
+  $('#phone').addEventListener('click', e => {
+    const a = e.target.closest('[data-act]'); if (!a) return;
+    ACT[a.dataset.act]?.(a);
+  });
+  $('#saveIn').addEventListener('keydown', e => { if (e.key === 'Enter') ACT.used(); });
+  document.addEventListener('click', e => {
+    const c = e.target.closest('[data-ctl]');
+    if (c) {
+      const k = c.dataset.ctl;
+      if (k === 'prev' && scr > 1) show(scr - 1);
+      if (k === 'main') ACT[MAIN_ACT[scr - 1]]();
+      if (k === 'reset') resetDemo();
+      return;
+    }
+    const g = e.target.closest('[data-goto]');
+    if (g) {
+      const n = +g.dataset.goto;
+      if (n >= 5 && S.saving == null) S.saving = 90;
+      if (n < 6) { if (S.done) { S.done = false; renderHome(); } }
+      go(7); show(n);
+    }
+  });
+  $('#steps').innerHTML = NAMES.map((n, k) => `<button class="step" data-step="${k + 1}" aria-current="false"><i>${k + 1}</i>${n}</button>`).join('');
+  $('#steps').addEventListener('click', e => { const b = e.target.closest('.step'); if (b) show(+b.dataset.step); });
+
+  /* ---------------- 9: thumbnails (cloned from the live phone) ---------------- */
+  function buildThumbs() {
+    $('#bgHome').innerHTML = homeHTML(S);
+    const wrap = $('#thumbs');
+    const statusEl = $('#phone .status'), island = $('#phone .island'), homebar = $('#phone .homebar');
+    for (let n = 1; n <= 6; n++) {
+      const src = $(`#phone .screen[data-s="${n}"]`);
+      const c = src.cloneNode(true);
+      c.classList.add('on');
+      [c, ...c.querySelectorAll('*')].forEach(el => {
+        el.removeAttribute('id'); el.removeAttribute('data-act'); el.removeAttribute('data-primary');
+        if (el.classList) el.classList.remove('pulse');
+        if (el.matches && el.matches('button, input, a')) el.setAttribute('tabindex', '-1');
+      });
+      $$('.notif, .sheet, .mini, .chk, .badge', c).forEach(el => { el.style.animation = 'none'; });
+      $$('canvas', c).forEach(el => el.remove());
+      const ph = document.createElement('div');
+      ph.className = 'phone' + (n === 5 ? ' dark-status' : '');
+      ph.setAttribute('aria-hidden', 'true'); ph.inert = true;
+      ph.append(island.cloneNode(true), statusEl.cloneNode(true), c, homebar.cloneNode(true));
+      const b = document.createElement('figure');
+      b.className = 'thumb';
+      b.setAttribute('aria-label', `Screen ${n}, ${NAMES[n - 1]}`);
+      const fr = document.createElement('div'); fr.className = 'tframe'; fr.appendChild(ph);
+      const lab = document.createElement('span'); lab.innerHTML = `<i>${n}</i>${NAMES[n - 1]}`;
+      b.append(fr, lab); wrap.appendChild(b);
+    }
+  }
+
+  /* ---------------- full-screen prototype view ---------------- */
+  function fitProto() {
+    const w = $('#phoneWrap');
+    const ps = Math.min(1, (innerHeight - 150) / 866, (innerWidth - 32) / 412);
+    w.style.setProperty('--ps', Math.max(.4, ps).toFixed(3));
+  }
+  function enterProto() {
+    document.body.classList.add('proto');
+    $('#protoView').hidden = false;
+    $('#pvSlot').appendChild($('#phoneWrap'));
+    toggleNotes(false);
+    fitProto();
+  }
+  function exitProto() {
+    if (!document.body.classList.contains('proto')) return;
+    document.body.classList.remove('proto');
+    $('#protoView').hidden = true;
+    $('#phoneSlot').appendChild($('#phoneWrap'));
+    $('#phoneWrap').style.removeProperty('--ps');
+  }
+  addEventListener('resize', () => { if (document.body.classList.contains('proto')) fitProto(); });
+
+  function route(source) {
+    const h = decodeURIComponent(location.hash.slice(1));
+    if (h === 'prototype') { enterProto(); return; }
+    exitProto();
+    const n = parseInt(h, 10);
+    go(isNaN(n) ? 0 : n - 1, source);
+    fit();
+  }
+  addEventListener('hashchange', () => {
+    if (suppressHash) { suppressHash = false; return; }
+    route('hash');
+  });
+
+  /* ---------------- boot ---------------- */
+  renderHome();
+  buildThumbs();
+  show(1);
+  fit();
+  route('init');
+  if (narrow.matches && location.hash && location.hash !== '#1' && location.hash !== '#prototype') {
+    requestAnimationFrame(() => slides[cur].scrollIntoView());
+  }
+  if (cur === 0 && !document.body.classList.contains('proto')) setTimeout(() => spin(false), 500);
+})();
+</script>
+
+</body>
+</html>
